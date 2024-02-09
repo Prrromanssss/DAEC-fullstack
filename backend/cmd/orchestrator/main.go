@@ -20,9 +20,10 @@ func main() {
 		log.Fatal("Can't get pwd")
 	}
 	rootPath := filepath.Dir(filepath.Dir(path))
+	logPath := fmt.Sprintf("%s/daee.log", rootPath)
 
 	// configuration log file
-	file, err := os.OpenFile(fmt.Sprintf("%s/log.txt", rootPath), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal("Log file is not found in environment")
 	} else {
@@ -55,7 +56,7 @@ func main() {
 	// 	DB: db,
 	// }
 
-	go logcleaner.CleanLog(10*time.Minute, fmt.Sprintf("%s/log.txt", rootPath), 100)
+	go logcleaner.CleanLog(10*time.Minute, logPath, 100)
 
 	router := chi.NewRouter()
 
