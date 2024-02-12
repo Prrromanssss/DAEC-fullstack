@@ -18,6 +18,8 @@ jobs:
         with:
           go-version: '1.21'
           cache: false
+      - name: Change to backend directory
+        run: cd backend
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
