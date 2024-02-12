@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Prrromanssss/DAEE/internal/config"
 	"Prrromanssss/DAEE/internal/handlers"
 	"Prrromanssss/DAEE/internal/logcleaner"
 	"fmt"
@@ -46,25 +47,9 @@ func main() {
 		log.Fatal("DB_URL is not found in environment")
 	}
 
-	// conn, err := sql.Open("postgres", dbURL)
+	apiCfg := config.NewApiConfig(dbURL)
 
-	// if err != nil {
-	// 	log.Fatal("Can't connect to database:", err)
-	// }
-
-	// db := database.New(conn)
-	// apiCfg := auth.ApiConfig{
-	// 	DB: db,
-	// }
-
-	timer := time.NewTimer(10 * time.Minute)
-	defer timer.Stop()
-
-	go func() {
-		<-timer.C
-		logcleaner.CleanLog(10*time.Minute, logPath, 100)
-	}()
-	// go logcleaner.CleanLog(10*time.Minute, logPath, 100)
+	go logcleaner.CleanLog(10*time.Minute, logPath, 100)
 
 	router := chi.NewRouter()
 
@@ -79,13 +64,13 @@ func main() {
 
 	v1Router := chi.NewRouter()
 
-	v1Router.Post("/expressions", handlers.HandlerCreateExpression)
-	v1Router.Get("/expressions", handlers.HandlerGetExpressions)
-	v1Router.Get("/expressions/{expressionID}", handlers.HandlerGetExpressionByID)
+	v1Router.Post("/expressions", config.MiddlewareConfig(handlers.HandlerCreateExpression, apiCfg))
+	v1Router.Get("/expressions", config.MiddlewareConfig(handlers.HandlerGetExpressions, apiCfg))
+	v1Router.Get("/expressions/{expressionID}", config.MiddlewareConfig(handlers.HandlerGetExpressionByID, apiCfg))
 
-	v1Router.Get("/operations", handlers.HandlerGetOperations)
+	v1Router.Get("/operations", config.MiddlewareConfig(handlers.HandlerGetOperations, apiCfg))
 
-	v1Router.Get("/computers", handlers.HandlerGetComputers)
+	v1Router.Get("/computers", config.MiddlewareConfig(handlers.HandlerGetComputers, apiCfg))
 
 	router.Mount("/v1", v1Router)
 
