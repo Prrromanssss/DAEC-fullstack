@@ -23,7 +23,9 @@ jobs:
           cache: false
 
       - name: Install dependencies
-        run: go mod download
+        run: |
+        cd backend
+        go mod download
 
       - name: Run golangci-lint
         run: |
