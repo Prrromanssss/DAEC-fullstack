@@ -69,6 +69,7 @@ func main() {
 	v1Router.Get("/expressions/{expressionID}", config.MiddlewareConfig(handlers.HandlerGetExpressionByID, apiCfg))
 
 	v1Router.Get("/operations", config.MiddlewareConfig(handlers.HandlerGetOperations, apiCfg))
+	v1Router.Put("/operations", config.MiddlewareConfig(handlers.HandlerUpdateOperation, apiCfg))
 
 	v1Router.Get("/computers", config.MiddlewareConfig(handlers.HandlerGetComputers, apiCfg))
 

@@ -18,3 +18,9 @@ type Expression struct {
 	Status    string
 	ParseData string
 }
+
+type Operation struct {
+	ID            uuid.UUID
+	OperationType string
+	ExecutionTime int64
+}
