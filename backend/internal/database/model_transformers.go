@@ -23,3 +23,11 @@ func DatabaseExpressionToExpression(dbExpr Expression) ExpressionTransformed {
 		Status:    dbExpr.Status,
 	}
 }
+
+func DatabaseExpressionsToExpressions(dbExprs []Expression) []ExpressionTransformed {
+	exprs := []ExpressionTransformed{}
+	for _, dbExpr := range dbExprs {
+		exprs = append(exprs, DatabaseExpressionToExpression(dbExpr))
+	}
+	return exprs
+}

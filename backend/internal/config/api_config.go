@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+
+	_ "github.com/lib/pq"
 )
 
 type ApiConfig struct {

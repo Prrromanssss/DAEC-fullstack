@@ -13,9 +13,9 @@ import (
 )
 
 const createExpression = `-- name: CreateExpression :one
-INSERT INTO expressions (id, created_at, updated_at, data, status)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, created_at, updated_at, data, status
+INSERT INTO expressions (id, created_at, updated_at, data, parse_data, status)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, created_at, updated_at, data, status, parse_data
 `
 
 type CreateExpressionParams struct {
@@ -23,6 +23,7 @@ type CreateExpressionParams struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Data      string
+	ParseData string
 	Status    string
 }
 
@@ -32,6 +33,7 @@ func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionPara
 		arg.CreatedAt,
 		arg.UpdatedAt,
 		arg.Data,
+		arg.ParseData,
 		arg.Status,
 	)
 	var i Expression
@@ -41,6 +43,60 @@ func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionPara
 		&i.UpdatedAt,
 		&i.Data,
 		&i.Status,
+		&i.ParseData,
 	)
 	return i, err
+}
+
+const getExpressionByID = `-- name: GetExpressionByID :one
+SELECT id, created_at, updated_at, data, status, parse_data FROM expressions
+WHERE id = $1
+`
+
+func (q *Queries) GetExpressionByID(ctx context.Context, id uuid.UUID) (Expression, error) {
+	row := q.db.QueryRowContext(ctx, getExpressionByID, id)
+	var i Expression
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Data,
+		&i.Status,
+		&i.ParseData,
+	)
+	return i, err
+}
+
+const getExpressions = `-- name: GetExpressions :many
+SELECT id, created_at, updated_at, data, status, parse_data FROM expressions
+`
+
+func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {
+	rows, err := q.db.QueryContext(ctx, getExpressions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Expression
+	for rows.Next() {
+		var i Expression
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Data,
+			&i.Status,
+			&i.ParseData,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

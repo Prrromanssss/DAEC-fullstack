@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 )
 
@@ -39,13 +40,28 @@ func HandlerCreateExpression(w http.ResponseWriter, r *http.Request, apiCfg *con
 	}
 
 	jsonhandler.RespondWithJson(w, 201, database.DatabaseExpressionToExpression(expression))
-
 }
 
 func HandlerGetExpressionByID(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
-	jsonhandler.RespondWithJson(w, 200, "Hello from HandlerGetExpressionByID")
+	expressionIDString := chi.URLParam(r, "expressionID")
+	expressionID, err := uuid.Parse(expressionIDString)
+	if err != nil {
+		jsonhandler.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse expression id: %v", err))
+		return
+	}
+	expression, err := apiCfg.DB.GetExpressionByID(r.Context(), expressionID)
+	if err != nil {
+		jsonhandler.RespondWithError(w, 400, fmt.Sprintf("Couldn't get expression: %v", err))
+		return
+	}
+	jsonhandler.RespondWithJson(w, 200, database.DatabaseExpressionToExpression(expression))
 }
 
 func HandlerGetExpressions(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
-	jsonhandler.RespondWithJson(w, 200, "Hello from HandlerGetExpressions")
+	expressions, err := apiCfg.DB.GetExpressions(r.Context())
+	if err != nil {
+		jsonhandler.RespondWithError(w, 400, fmt.Sprintf("Couldn't get expressions: %v", err))
+		return
+	}
+	jsonhandler.RespondWithJson(w, 200, database.DatabaseExpressionsToExpressions(expressions))
 }

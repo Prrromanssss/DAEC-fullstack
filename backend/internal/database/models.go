@@ -16,4 +16,5 @@ type Expression struct {
 	UpdatedAt time.Time
 	Data      string
 	Status    string
+	ParseData string
 }
