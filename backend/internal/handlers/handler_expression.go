@@ -31,6 +31,7 @@ func HandlerCreateExpression(w http.ResponseWriter, r *http.Request, apiCfg *con
 			CreatedAt: time.Now().UTC(),
 			UpdatedAt: time.Now().UTC(),
 			Data:      params.Data,
+			ParseData: "",
 			Status:    "ready for computation",
 		})
 
