@@ -1,4 +1,4 @@
-package jsonhandler
+package handlers
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func RespondWithError(w http.ResponseWriter, code int, msg string) {
+func respondWithError(w http.ResponseWriter, code int, msg string) {
 	if code > 499 {
 		log.Println("Responding with 5XX error:", msg)
 	}
@@ -14,12 +14,12 @@ func RespondWithError(w http.ResponseWriter, code int, msg string) {
 		Error string `json:"error"`
 	}
 
-	RespondWithJson(w, code, errResponse{
+	respondWithJson(w, code, errResponse{
 		Error: msg,
 	})
 }
 
-func RespondWithJson(w http.ResponseWriter, code int, payload interface{}) {
+func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		log.Printf("Failed to marshal JSON response: %v\n", payload)

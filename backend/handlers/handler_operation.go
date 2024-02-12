@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"Prrromanssss/DAEE/internal/config"
+	"Prrromanssss/DAEE/config"
 	"Prrromanssss/DAEE/internal/database"
-	"Prrromanssss/DAEE/internal/jsonhandler"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,10 +11,10 @@ import (
 func HandlerGetOperations(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
 	operations, err := apiCfg.DB.GetOperations(r.Context())
 	if err != nil {
-		jsonhandler.RespondWithError(w, 400, fmt.Sprintf("Couldn't get operations: %v", err))
+		respondWithError(w, 400, fmt.Sprintf("Couldn't get operations: %v", err))
 		return
 	}
-	jsonhandler.RespondWithJson(w, 200, database.DatabaseOperationsToOperations(operations))
+	respondWithJson(w, 200, database.DatabaseOperationsToOperations(operations))
 }
 
 func HandlerUpdateOperation(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
@@ -28,7 +27,7 @@ func HandlerUpdateOperation(w http.ResponseWriter, r *http.Request, apiCfg *conf
 	params := parametrs{}
 	err := decoder.Decode(&params)
 	if err != nil {
-		jsonhandler.RespondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
+		respondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
 	}
 
 	operation, err := apiCfg.DB.UpdateOperationTime(r.Context(), database.UpdateOperationTimeParams{
@@ -37,10 +36,10 @@ func HandlerUpdateOperation(w http.ResponseWriter, r *http.Request, apiCfg *conf
 	})
 
 	if err != nil {
-		jsonhandler.RespondWithError(w, 400, fmt.Sprintf("Couldn't update operation: %v", err))
+		respondWithError(w, 400, fmt.Sprintf("Couldn't update operation: %v", err))
 		return
 	}
 
-	jsonhandler.RespondWithJson(w, 200, database.DatabaseOperationToOperation(operation))
+	respondWithJson(w, 200, database.DatabaseOperationToOperation(operation))
 
 }

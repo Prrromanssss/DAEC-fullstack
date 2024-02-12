@@ -1,9 +1,9 @@
 package main
 
 import (
-	"Prrromanssss/DAEE/internal/config"
-	"Prrromanssss/DAEE/internal/handlers"
-	"Prrromanssss/DAEE/internal/logcleaner"
+	"Prrromanssss/DAEE/config"
+	"Prrromanssss/DAEE/handlers"
+	"Prrromanssss/DAEE/pkg/logcleaner"
 	"fmt"
 	"log"
 	"net/http"
