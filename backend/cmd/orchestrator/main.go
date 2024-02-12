@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Prrromanssss/DAEE/internal/handlers"
 	"Prrromanssss/DAEE/internal/logcleaner"
 	"fmt"
 	"log"
@@ -56,7 +57,14 @@ func main() {
 	// 	DB: db,
 	// }
 
-	go logcleaner.CleanLog(10*time.Minute, logPath, 100)
+	timer := time.NewTimer(10 * time.Minute)
+	defer timer.Stop()
+
+	go func() {
+		<-timer.C
+		logcleaner.CleanLog(10*time.Minute, logPath, 100)
+	}()
+	// go logcleaner.CleanLog(10*time.Minute, logPath, 100)
 
 	router := chi.NewRouter()
 
@@ -70,6 +78,14 @@ func main() {
 	}))
 
 	v1Router := chi.NewRouter()
+
+	v1Router.Post("/expressions", handlers.HandlerCreateExpression)
+	v1Router.Get("/expressions", handlers.HandlerGetExpressions)
+	v1Router.Get("/expressions/{expressionID}", handlers.HandlerGetExpressionByID)
+
+	v1Router.Get("/operations", handlers.HandlerGetOperations)
+
+	v1Router.Get("/computers", handlers.HandlerGetComputers)
 
 	router.Mount("/v1", v1Router)
 
