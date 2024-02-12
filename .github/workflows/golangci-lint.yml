@@ -23,6 +23,7 @@ jobs:
           cache: false
       
       - name: golangci-lint
+        working-directory: ./backend
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.54
