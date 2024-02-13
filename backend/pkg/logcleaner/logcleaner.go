@@ -14,7 +14,7 @@ func CleanLog(
 	filePath string,
 	linesToRemove int,
 ) {
-	timer := time.NewTimer(10 * time.Minute)
+	timer := time.NewTimer(timeBetweenCleanning)
 	defer timer.Stop()
 	<-timer.C
 

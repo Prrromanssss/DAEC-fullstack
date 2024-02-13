@@ -71,7 +71,7 @@ func main() {
 	v1Router.Get("/operations", config.MiddlewareConfig(handlers.HandlerGetOperations, apiCfg))
 	v1Router.Put("/operations", config.MiddlewareConfig(handlers.HandlerUpdateOperation, apiCfg))
 
-	v1Router.Get("/computers", config.MiddlewareConfig(handlers.HandlerGetComputers, apiCfg))
+	v1Router.Get("/agents", config.MiddlewareConfig(handlers.HandlerGetComputers, apiCfg))
 
 	router.Mount("/v1", v1Router)
 
