@@ -15,3 +15,6 @@ github.com/joho/godotenv
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
+# github.com/streadway/amqp v1.1.0
+## explicit; go 1.10
+github.com/streadway/amqp
