@@ -3,6 +3,7 @@ package handlers
 import (
 	"Prrromanssss/DAEE/config"
 	"Prrromanssss/DAEE/internal/database"
+	"Prrromanssss/DAEE/pkg/orchestrator"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -24,13 +25,20 @@ func HandlerCreateExpression(w http.ResponseWriter, r *http.Request, apiCfg *con
 		respondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
 	}
 
+	parseData, err := orchestrator.ParseExpression(params.Data)
+
+	if err != nil {
+		respondWithError(w, 400, fmt.Sprintf("Error parsing expression: %v", err))
+		return
+	}
+
 	expression, err := apiCfg.DB.CreateExpression(r.Context(),
 		database.CreateExpressionParams{
 			ID:        uuid.New(),
 			CreatedAt: time.Now().UTC(),
 			UpdatedAt: time.Now().UTC(),
 			Data:      params.Data,
-			ParseData: "",
+			ParseData: parseData,
 			Status:    "ready for computation",
 		})
 

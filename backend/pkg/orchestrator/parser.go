@@ -2,19 +2,29 @@ package orchestrator
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
 )
 
-func InfixToPostfix(expression string) (string, error) {
-	var output strings.Builder
-	var stack []rune
+func ParseExpression(expression string) (string, error) {
 	rawExpression := strings.ReplaceAll(expression, " ", "")
 	if !isValidExpression(rawExpression) {
 		return "", errors.New("invalid expression")
 	}
+	rawExpression = addBrackets(rawExpression)
+	result, err := infixToPostfix(rawExpression)
+	if err != nil {
+		return "", err
+	}
+	return result, nil
+}
 
-	for _, char := range rawExpression {
+func infixToPostfix(expression string) (string, error) {
+	var output strings.Builder
+	var stack []rune
+	for _, char := range expression {
 		switch char {
 		case '(':
 			stack = append(stack, char)
@@ -39,7 +49,7 @@ func InfixToPostfix(expression string) (string, error) {
 	return strings.ReplaceAll(strings.TrimSpace(output.String()), "  ", " "), nil
 }
 
-func Contains(arr []rune, element rune) bool {
+func contains(arr []rune, element rune) bool {
 	for _, elem := range arr {
 		if elem == element {
 			return true
@@ -64,15 +74,15 @@ func isValidExpression(expression string) bool {
 			if i == 0 {
 				return false
 			}
-			if Contains([]rune{'+', '-', '*', '/', '(', ' '}, rune(expression[i-1])) {
+			if contains([]rune{'+', '-', '*', '/', '(', ' '}, rune(expression[i-1])) {
 				return false
 			}
 		case '-', '+':
 			if i == 0 || i == 1 || expression[i-1] == '(' {
 				continue
 			}
-			if Contains([]rune{'+', '-', '*', '/', ' '}, rune(expression[i-1])) &&
-				Contains([]rune{'+', '-', '*', '/', '(', ' '}, rune(expression[i-2])) {
+			if contains([]rune{'+', '-', '*', '/', ' '}, rune(expression[i-1])) &&
+				contains([]rune{'+', '-', '*', '/', '(', ' '}, rune(expression[i-2])) {
 				return false
 			}
 
@@ -86,9 +96,83 @@ func isValidExpression(expression string) bool {
 	return len(stack) == 0
 }
 
-// func addBrackets(expression string) string {
-// 	return expression
-// }
+func replaceUnaryPlusAndMinus(expression string) string {
+	var result strings.Builder
+
+	length := len(expression)
+	ind := 0
+	for ind < length {
+		if ind+1 < length && contains([]rune{'+', '-', '*', '/'}, rune(expression[ind])) && expression[ind+1] == '+' {
+			result.WriteRune(rune(expression[ind]))
+			result.WriteRune('&')
+			ind++
+		} else if ind == 0 && expression[ind] == '+' {
+			result.WriteRune('&')
+		} else if ind+1 < length && contains([]rune{'+', '-', '*', '/'}, rune(expression[ind])) && expression[ind+1] == '-' {
+			result.WriteRune(rune(expression[ind]))
+			result.WriteRune('$')
+			ind++
+		} else if ind == 0 && expression[ind] == '-' {
+			result.WriteRune('$')
+		} else {
+			result.WriteRune(rune(expression[ind]))
+		}
+		ind++
+	}
+	return result.String()
+}
+
+func orderPlusMinus(expression string) []rune {
+	res := make([]rune, 0)
+	for _, char := range expression {
+		if char == '-' || char == '+' {
+			res = append(res, char)
+		}
+	}
+	return res
+}
+
+func isNumber(s string) bool {
+	_, err := strconv.ParseFloat(s, 64)
+	return err == nil || s[0] == '$' || s[0] == '&'
+}
+
+func addBrackets(expression string) string {
+	var result string
+
+	parts := strings.FieldsFunc(replaceUnaryPlusAndMinus(expression), func(r rune) bool {
+		return r == '+' || r == '-'
+	})
+	fmt.Println(parts)
+	length := len(parts)
+	sliceOfOrdersPlusMinus := orderPlusMinus(replaceUnaryPlusAndMinus(expression))
+	var ind, indForOrdersPlusMinus int
+	if len(parts) < 2 {
+		return expression
+	}
+	for ind < length {
+		if ind == 0 && isNumber(parts[ind]) && isNumber(parts[ind+1]) {
+			result += "(" + parts[ind] + string(sliceOfOrdersPlusMinus[indForOrdersPlusMinus]) + parts[ind+1] + ")"
+			indForOrdersPlusMinus++
+			ind++
+		} else if ind == 0 && ((isNumber(parts[ind]) && !isNumber(parts[ind+1])) || !isNumber(parts[ind])) {
+			result += parts[ind]
+		} else if ind+1 < length && isNumber(parts[ind]) && isNumber(parts[ind+1]) {
+			result += string(sliceOfOrdersPlusMinus[indForOrdersPlusMinus]) + "(" + parts[ind]
+			indForOrdersPlusMinus++
+			result += string(sliceOfOrdersPlusMinus[indForOrdersPlusMinus]) + parts[ind+1] + ")"
+			indForOrdersPlusMinus++
+			ind++
+		} else {
+			result += string(sliceOfOrdersPlusMinus[indForOrdersPlusMinus]) + parts[ind]
+			indForOrdersPlusMinus++
+		}
+		ind++
+	}
+	result = strings.ReplaceAll(result, "&", "+")
+	result = strings.ReplaceAll(result, "$", "-")
+	return result
+}
 
 func popUntilOpeningParenthesis(stack *[]rune, output *strings.Builder) error {
 	for len(*stack) > 0 && (*stack)[len(*stack)-1] != '(' {
