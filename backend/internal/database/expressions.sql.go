@@ -24,7 +24,7 @@ type CreateExpressionParams struct {
 	UpdatedAt time.Time
 	Data      string
 	ParseData string
-	Status    string
+	Status    ExpressionStatus
 }
 
 func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionParams) (Expression, error) {

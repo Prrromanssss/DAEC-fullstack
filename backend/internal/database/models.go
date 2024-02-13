@@ -5,17 +5,115 @@
 package database
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+type AgentStatus string
+
+const (
+	AgentStatusRunning    AgentStatus = "running"
+	AgentStatusWaiting    AgentStatus = "waiting"
+	AgentStatusSleeping   AgentStatus = "sleeping"
+	AgentStatusTerminated AgentStatus = "terminated"
+)
+
+func (e *AgentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AgentStatus(s)
+	case string:
+		*e = AgentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AgentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullAgentStatus struct {
+	AgentStatus AgentStatus
+	Valid       bool // Valid is true if AgentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAgentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.AgentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AgentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAgentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.AgentStatus, nil
+}
+
+type ExpressionStatus string
+
+const (
+	ExpressionStatusReadyforcomputation ExpressionStatus = "ready for computation"
+	ExpressionStatusComputing           ExpressionStatus = "computing"
+	ExpressionStatusResult              ExpressionStatus = "result"
+	ExpressionStatusTerminated          ExpressionStatus = "terminated"
+)
+
+func (e *ExpressionStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ExpressionStatus(s)
+	case string:
+		*e = ExpressionStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ExpressionStatus: %T", src)
+	}
+	return nil
+}
+
+type NullExpressionStatus struct {
+	ExpressionStatus ExpressionStatus
+	Valid            bool // Valid is true if ExpressionStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullExpressionStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ExpressionStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ExpressionStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullExpressionStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.ExpressionStatus, nil
+}
+
+type Agent struct {
+	ID                           uuid.UUID
+	NumberOfParallelCalculations int32
+	LastPing                     time.Time
+	Status                       AgentStatus
+	CreatedAt                    time.Time
+}
 
 type Expression struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Data      string
-	Status    string
+	Status    ExpressionStatus
 	ParseData string
 }
 

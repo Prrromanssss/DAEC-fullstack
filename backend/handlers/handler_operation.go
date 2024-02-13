@@ -41,5 +41,4 @@ func HandlerUpdateOperation(w http.ResponseWriter, r *http.Request, apiCfg *conf
 	}
 
 	respondWithJson(w, 200, database.DatabaseOperationToOperation(operation))
-
 }
