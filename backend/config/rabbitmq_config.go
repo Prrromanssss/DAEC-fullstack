@@ -11,7 +11,7 @@ type AMQPConfig struct {
 	Ch   *amqp.Channel
 }
 
-func NewConsumerAMQPConfig(amqpUrl string) *AMQPConfig {
+func NewAMQPConfig(amqpUrl string) *AMQPConfig {
 	conn, err := amqp.Dial(amqpUrl)
 	if err != nil {
 		log.Fatalf("Can't connect to RabbitMQ: %v", err)
