@@ -96,11 +96,10 @@ func (q *Queries) GetAgents(ctx context.Context) ([]Agent, error) {
 	return items, nil
 }
 
-const updateAgentLastPing = `-- name: UpdateAgentLastPing :one
+const updateAgentLastPing = `-- name: UpdateAgentLastPing :exec
 UPDATE agents
 SET last_ping = $1
 WHERE id = $2
-RETURNING id, number_of_parallel_calculations, last_ping, status, created_at
 `
 
 type UpdateAgentLastPingParams struct {
@@ -108,24 +107,15 @@ type UpdateAgentLastPingParams struct {
 	ID       uuid.UUID
 }
 
-func (q *Queries) UpdateAgentLastPing(ctx context.Context, arg UpdateAgentLastPingParams) (Agent, error) {
-	row := q.db.QueryRowContext(ctx, updateAgentLastPing, arg.LastPing, arg.ID)
-	var i Agent
-	err := row.Scan(
-		&i.ID,
-		&i.NumberOfParallelCalculations,
-		&i.LastPing,
-		&i.Status,
-		&i.CreatedAt,
-	)
-	return i, err
+func (q *Queries) UpdateAgentLastPing(ctx context.Context, arg UpdateAgentLastPingParams) error {
+	_, err := q.db.ExecContext(ctx, updateAgentLastPing, arg.LastPing, arg.ID)
+	return err
 }
 
-const updateAgentStatus = `-- name: UpdateAgentStatus :one
+const updateAgentStatus = `-- name: UpdateAgentStatus :exec
 UPDATE agents
 SET status = $1
 WHERE id = $2
-RETURNING id, number_of_parallel_calculations, last_ping, status, created_at
 `
 
 type UpdateAgentStatusParams struct {
@@ -133,15 +123,7 @@ type UpdateAgentStatusParams struct {
 	ID     uuid.UUID
 }
 
-func (q *Queries) UpdateAgentStatus(ctx context.Context, arg UpdateAgentStatusParams) (Agent, error) {
-	row := q.db.QueryRowContext(ctx, updateAgentStatus, arg.Status, arg.ID)
-	var i Agent
-	err := row.Scan(
-		&i.ID,
-		&i.NumberOfParallelCalculations,
-		&i.LastPing,
-		&i.Status,
-		&i.CreatedAt,
-	)
-	return i, err
+func (q *Queries) UpdateAgentStatus(ctx context.Context, arg UpdateAgentStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateAgentStatus, arg.Status, arg.ID)
+	return err
 }

@@ -86,6 +86,7 @@ func (aa *AgentAgregator) PublishMessage(expressionID uuid.UUID, token, expresss
 			Body:        jsonData,
 		},
 	)
+	log.Println("Publishing message to Queue")
 	if err != nil {
 		log.Printf("Can't publish message to %s queue: %v", aa.amqpProducer.Queue.Name, err)
 	}
@@ -94,22 +95,28 @@ func (aa *AgentAgregator) PublishMessage(expressionID uuid.UUID, token, expresss
 func AgregateAgents(agentAg *AgentAgregator) {
 	defer agentAg.amqpConfig.Conn.Close()
 	defer agentAg.amqpConfig.Ch.Close()
-
+	log.Println("Initialize Agent Agregator")
 	for {
 		select {
 		case expressionMessage := <-agentAg.tasks:
+			log.Println("Consume message from orchestrator")
 			tokens := orchestrator.GetTokens(expressionMessage.Expression)
 			for _, token := range tokens {
+				log.Println("Consume token to queue")
 				agentAg.PublishMessage(expressionMessage.ExpressionID, token, expressionMessage.Expression)
 			}
-		case msgResOrPing := <-agentAg.amqpConsumer.Messages:
+		case msgFromAgents := <-agentAg.amqpConsumer.Messages:
+			err := msgFromAgents.Ack(false)
+			if err != nil {
+				log.Println("Error acknowledging message:", err)
+			}
 			var exprMsg ExpressionMessage
-			if err := json.Unmarshal(msgResOrPing.Body, &exprMsg); err != nil {
+			if err := json.Unmarshal(msgFromAgents.Body, &exprMsg); err != nil {
 				log.Printf("Failed to parse JSON: %v", err)
 				continue
 			}
 			if exprMsg.IsPing {
-				_, err := agentAg.dbConfig.DB.UpdateAgentLastPing(context.Background(), database.UpdateAgentLastPingParams{
+				err := agentAg.dbConfig.DB.UpdateAgentLastPing(context.Background(), database.UpdateAgentLastPingParams{
 					ID:       exprMsg.AgentID,
 					LastPing: time.Now().UTC(),
 				})
@@ -127,7 +134,7 @@ func AgregateAgents(agentAg *AgentAgregator) {
 				}
 
 				if orchestrator.IsNumber(newExpr) || (newExpr[0] == '-' && orchestrator.IsNumber(newExpr[1:])) {
-					_, err := agentAg.dbConfig.DB.MakeExpressionReady(context.Background(), database.MakeExpressionReadyParams{
+					err := agentAg.dbConfig.DB.MakeExpressionReady(context.Background(), database.MakeExpressionReadyParams{
 						ParseData: "",
 						Result:    int32(result),
 						UpdatedAt: time.Now().UTC(),

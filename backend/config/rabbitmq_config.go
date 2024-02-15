@@ -43,6 +43,7 @@ func NewAMQPConfig(amqpUrl string) (*AMQPConfig, error) {
 		Conn:   conn,
 		Ch:     ch,
 		Queues: make(map[string]amqp.Queue),
+		mu:     &sync.Mutex{},
 	}, nil
 }
 

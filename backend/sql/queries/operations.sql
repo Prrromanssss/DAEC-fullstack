@@ -6,3 +6,7 @@ RETURNING *;
 
 -- name: GetOperations :many
 SELECT * FROM operations;
+
+-- name: GetOperationTimeByType :one
+SELECT execution_time FROM operations
+WHERE operation_type = $1;

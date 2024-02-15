@@ -12,6 +12,9 @@ type ExpressionTransformed struct {
 	UpdatedAt time.Time        `json:"updated_at"`
 	Data      string           `json:"data"`
 	Status    ExpressionStatus `json:"status"`
+	ParseData string           `json:"parse_data"`
+	Result    int32            `json:"result"`
+	IsReady   bool             `json:"is_ready"`
 }
 
 func DatabaseExpressionToExpression(dbExpr Expression) ExpressionTransformed {
@@ -21,6 +24,9 @@ func DatabaseExpressionToExpression(dbExpr Expression) ExpressionTransformed {
 		UpdatedAt: dbExpr.UpdatedAt,
 		Data:      dbExpr.Data,
 		Status:    dbExpr.Status,
+		ParseData: dbExpr.ParseData,
+		Result:    dbExpr.Result,
+		IsReady:   dbExpr.IsReady,
 	}
 }
 

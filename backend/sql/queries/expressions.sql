@@ -16,8 +16,7 @@ SET data = $1
 WHERE id = $2
 RETURNING *;
 
--- name: MakeExpressionReady :one
+-- name: MakeExpressionReady :exec
 UPDATE expressions
 SET parse_data = $1, result = $2, updated_at = $3, is_ready = True, status = 'result'
-WHERE id = $4
-RETURNING *;
+WHERE id = $4;

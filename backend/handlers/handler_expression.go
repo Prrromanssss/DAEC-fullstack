@@ -33,7 +33,6 @@ func HandlerCreateExpression(
 	}
 
 	parseData, err := orchestrator.ParseExpression(params.Data)
-	expression_id := uuid.New()
 
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Error parsing expression: %v", err))
@@ -42,7 +41,7 @@ func HandlerCreateExpression(
 
 	expression, err := dbCfg.DB.CreateExpression(r.Context(),
 		database.CreateExpressionParams{
-			ID:        expression_id,
+			ID:        uuid.New(),
 			CreatedAt: time.Now().UTC(),
 			UpdatedAt: time.Now().UTC(),
 			Data:      params.Data,
@@ -56,8 +55,8 @@ func HandlerCreateExpression(
 	}
 
 	msgToQueue := agent.MessageFromOrchestrator{
-		ExpressionID: expression_id,
-		Expression:   params.Data,
+		ExpressionID: expression.ID,
+		Expression:   parseData,
 	}
 
 	agentAgr.AddTask(msgToQueue)

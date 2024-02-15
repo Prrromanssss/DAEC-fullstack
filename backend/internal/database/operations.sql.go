@@ -9,6 +9,18 @@ import (
 	"context"
 )
 
+const getOperationTimeByType = `-- name: GetOperationTimeByType :one
+SELECT execution_time FROM operations
+WHERE operation_type = $1
+`
+
+func (q *Queries) GetOperationTimeByType(ctx context.Context, operationType string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getOperationTimeByType, operationType)
+	var execution_time int64
+	err := row.Scan(&execution_time)
+	return execution_time, err
+}
+
 const getOperations = `-- name: GetOperations :many
 SELECT id, operation_type, execution_time FROM operations
 `

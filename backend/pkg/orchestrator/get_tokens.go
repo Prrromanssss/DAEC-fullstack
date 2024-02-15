@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -10,11 +11,12 @@ func GetTokens(parseExpression string) []string {
 	res := make([]string, 0)
 	ind := 0
 	tokens := strings.Split(parseExpression, " ")
+	log.Println(tokens)
 	for ind+2 < len(tokens) {
 		if IsNumber(string(tokens[ind])) &&
 			IsNumber(string(tokens[ind+1])) &&
 			!IsNumber(string(tokens[ind+2])) {
-			res = append(res, fmt.Sprint(string(tokens[ind]), string(tokens[ind+1]), string(tokens[ind+2])))
+			res = append(res, fmt.Sprint(string(tokens[ind]), " ", string(tokens[ind+1]), " ", string(tokens[ind+2])))
 			ind += 2
 		}
 		ind++

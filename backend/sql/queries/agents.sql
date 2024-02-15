@@ -10,14 +10,12 @@ SELECT * FROM agents;
 SELECT * FROM agents
 WHERE id = $1;
 
--- name: UpdateAgentLastPing :one
+-- name: UpdateAgentLastPing :exec
 UPDATE agents
 SET last_ping = $1
-WHERE id = $2
-RETURNING *;
+WHERE id = $2;
 
--- name: UpdateAgentStatus :one
+-- name: UpdateAgentStatus :exec
 UPDATE agents
 SET status = $1
-WHERE id = $2
-RETURNING *;
+WHERE id = $2;
