@@ -4,7 +4,6 @@ import (
 	"Prrromanssss/DAEE/internal/database"
 	"database/sql"
 	"log"
-	"net/http"
 
 	_ "github.com/lib/pq"
 )
@@ -12,8 +11,6 @@ import (
 type ApiConfig struct {
 	DB *database.Queries
 }
-
-type configHandler func(http.ResponseWriter, *http.Request, *ApiConfig)
 
 func NewApiConfig(dbURL string) *ApiConfig {
 	conn, err := sql.Open("postgres", dbURL)
@@ -26,11 +23,5 @@ func NewApiConfig(dbURL string) *ApiConfig {
 
 	return &ApiConfig{
 		DB: db,
-	}
-}
-
-func MiddlewareConfig(handler configHandler, apiCfg *ApiConfig) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r, apiCfg)
 	}
 }

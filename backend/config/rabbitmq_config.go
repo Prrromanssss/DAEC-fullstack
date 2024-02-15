@@ -46,8 +46,8 @@ func NewAMQPConfig(amqpUrl string) (*AMQPConfig, error) {
 	}, nil
 }
 
-func NewAMQProducer(config AMQPConfig, queueName string) (*AMQPProducer, error) {
-	queue, err := config.Ch.QueueDeclare(
+func NewAMQProducer(amqpCfg *AMQPConfig, queueName string) (*AMQPProducer, error) {
+	queue, err := amqpCfg.Ch.QueueDeclare(
 		queueName,
 		false,
 		false,
@@ -59,19 +59,19 @@ func NewAMQProducer(config AMQPConfig, queueName string) (*AMQPProducer, error) 
 		log.Printf("Can't create a RabbitMQ queue: %v", err)
 		return nil, err
 	}
-	config.mu.Lock()
-	if _, ok := config.Queues[queueName]; !ok {
-		config.Queues[queueName] = queue
+	amqpCfg.mu.Lock()
+	if _, ok := amqpCfg.Queues[queueName]; !ok {
+		amqpCfg.Queues[queueName] = queue
 	}
-	config.mu.Unlock()
+	amqpCfg.mu.Unlock()
 	return &AMQPProducer{
 		Queue: queue,
-		Ch:    config.Ch,
+		Ch:    amqpCfg.Ch,
 	}, nil
 }
 
-func NewAMQPConsumer(config AMQPConfig, queueName string) (*AMQPConsumer, error) {
-	queue, err := config.Ch.QueueDeclare(
+func NewAMQPConsumer(amqpCfg *AMQPConfig, queueName string) (*AMQPConsumer, error) {
+	queue, err := amqpCfg.Ch.QueueDeclare(
 		queueName,
 		false,
 		false,
@@ -83,12 +83,12 @@ func NewAMQPConsumer(config AMQPConfig, queueName string) (*AMQPConsumer, error)
 		log.Printf("Can't create a RabbitMQ queue: %v", err)
 		return nil, err
 	}
-	config.mu.Lock()
-	if _, ok := config.Queues[queueName]; !ok {
-		config.Queues[queueName] = queue
+	amqpCfg.mu.Lock()
+	if _, ok := amqpCfg.Queues[queueName]; !ok {
+		amqpCfg.Queues[queueName] = queue
 	}
-	config.mu.Unlock()
-	msgs, err := config.Ch.Consume(
+	amqpCfg.mu.Unlock()
+	msgs, err := amqpCfg.Ch.Consume(
 		queue.Name,
 		"",
 		true,

@@ -3,6 +3,7 @@ package main
 import (
 	"Prrromanssss/DAEE/config"
 	"Prrromanssss/DAEE/handlers"
+	"Prrromanssss/DAEE/pkg/agent"
 	"Prrromanssss/DAEE/pkg/logcleaner"
 	"fmt"
 	"log"
@@ -24,7 +25,7 @@ func main() {
 	rootPath := filepath.Dir(filepath.Dir(path))
 	logPath := fmt.Sprintf("%s/daee.log", rootPath)
 
-	// configuration log file
+	// Configuration log file
 	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal("Log file is not found in environment")
@@ -41,6 +42,8 @@ func main() {
 		log.Fatal("PORT is not found in environment")
 	}
 
+	// Configuration database
+
 	dbURL := os.Getenv("DB_URL")
 
 	if dbURL == "" {
@@ -50,6 +53,33 @@ func main() {
 	apiCfg := config.NewApiConfig(dbURL)
 
 	go logcleaner.CleanLog(10*time.Minute, logPath, 100)
+
+	// Configuration RabbitMQ
+
+	rabbitMQURL := os.Getenv("RABBITMQ_URL")
+
+	if rabbitMQURL == "" {
+		log.Fatal("RABBITMQ_URL is not found in environment")
+	}
+
+	amqpCfg, err := config.NewAMQPConfig(rabbitMQURL)
+
+	if err != nil {
+		log.Fatalf("Can't config RabbitMQ: %v", err)
+	}
+
+	agentAgregator := agent.NewAgentAgregator(
+		amqpCfg,
+		"Queue for sending expressions to agents",
+		"Queue for consuming results and pings from agents")
+
+	go agent.AgregateAgents(agentAgregator)
+
+	if err != nil {
+		log.Fatalf("Can't connect to RabbitMQ: %v", err)
+	}
+
+	// Configuration http server
 
 	router := chi.NewRouter()
 
@@ -64,15 +94,15 @@ func main() {
 
 	v1Router := chi.NewRouter()
 
-	v1Router.Post("/expressions", config.MiddlewareConfig(handlers.HandlerCreateExpression, apiCfg))
-	v1Router.Get("/expressions", config.MiddlewareConfig(handlers.HandlerGetExpressions, apiCfg))
-	v1Router.Get("/expressions/{expressionID}", config.MiddlewareConfig(handlers.HandlerGetExpressionByID, apiCfg))
+	v1Router.Post("/expressions", handlers.MiddlewareAgentAgregatorAndApiConfig(handlers.HandlerCreateExpression, apiCfg, agentAgregator))
+	v1Router.Get("/expressions", handlers.MiddlewareApiConfig(handlers.HandlerGetExpressions, apiCfg))
+	v1Router.Get("/expressions/{expressionID}", handlers.MiddlewareApiConfig(handlers.HandlerGetExpressionByID, apiCfg))
 
-	v1Router.Get("/operations", config.MiddlewareConfig(handlers.HandlerGetOperations, apiCfg))
-	v1Router.Put("/operations", config.MiddlewareConfig(handlers.HandlerUpdateOperation, apiCfg))
+	v1Router.Get("/operations", handlers.MiddlewareApiConfig(handlers.HandlerGetOperations, apiCfg))
+	v1Router.Put("/operations", handlers.MiddlewareApiConfig(handlers.HandlerUpdateOperation, apiCfg))
 
-	v1Router.Get("/agents", config.MiddlewareConfig(handlers.HandlerGetAgents, apiCfg))
-	v1Router.Get("/agents/{agentID}", config.MiddlewareConfig(handlers.HandlerGetAgentByID, apiCfg))
+	v1Router.Get("/agents", handlers.MiddlewareApiConfig(handlers.HandlerGetAgents, apiCfg))
+	v1Router.Get("/agents/{agentID}", handlers.MiddlewareApiConfig(handlers.HandlerGetAgentByID, apiCfg))
 
 	router.Mount("/v1", v1Router)
 

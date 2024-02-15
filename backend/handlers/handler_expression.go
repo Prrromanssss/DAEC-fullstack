@@ -3,9 +3,11 @@ package handlers
 import (
 	"Prrromanssss/DAEE/config"
 	"Prrromanssss/DAEE/internal/database"
+	"Prrromanssss/DAEE/pkg/agent"
 	"Prrromanssss/DAEE/pkg/orchestrator"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -13,7 +15,12 @@ import (
 	"github.com/google/uuid"
 )
 
-func HandlerCreateExpression(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
+func HandlerCreateExpression(
+	w http.ResponseWriter,
+	r *http.Request,
+	apiCfg *config.ApiConfig,
+	agentAgr *agent.AgentAgregator,
+) {
 	type parametrs struct {
 		Data string `json:"data"`
 	}
@@ -26,6 +33,7 @@ func HandlerCreateExpression(w http.ResponseWriter, r *http.Request, apiCfg *con
 	}
 
 	parseData, err := orchestrator.ParseExpression(params.Data)
+	id := uuid.New()
 
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Error parsing expression: %v", err))
@@ -34,7 +42,7 @@ func HandlerCreateExpression(w http.ResponseWriter, r *http.Request, apiCfg *con
 
 	expression, err := apiCfg.DB.CreateExpression(r.Context(),
 		database.CreateExpressionParams{
-			ID:        uuid.New(),
+			ID:        id,
 			CreatedAt: time.Now().UTC(),
 			UpdatedAt: time.Now().UTC(),
 			Data:      params.Data,
@@ -46,6 +54,14 @@ func HandlerCreateExpression(w http.ResponseWriter, r *http.Request, apiCfg *con
 		respondWithError(w, 400, fmt.Sprintf("Couldn't create expression: %v", err))
 		return
 	}
+
+	msgToQueue := agent.MessageFromOrchestrator{
+		ID:         id,
+		Expression: params.Data,
+	}
+
+	agentAgr.AddTask(msgToQueue)
+	log.Println("Send message from orchestrator to agent agregator")
 
 	respondWithJson(w, 201, database.DatabaseExpressionToExpression(expression))
 }
