@@ -20,7 +20,7 @@ RETURNING id, operation_type, execution_time
 type CreateOperationParams struct {
 	ID            uuid.UUID
 	OperationType string
-	ExecutionTime int64
+	ExecutionTime int32
 }
 
 func (q *Queries) CreateOperation(ctx context.Context, arg CreateOperationParams) error {
@@ -45,9 +45,9 @@ SELECT execution_time FROM operations
 WHERE operation_type = $1
 `
 
-func (q *Queries) GetOperationTimeByType(ctx context.Context, operationType string) (int64, error) {
+func (q *Queries) GetOperationTimeByType(ctx context.Context, operationType string) (int32, error) {
 	row := q.db.QueryRowContext(ctx, getOperationTimeByType, operationType)
-	var execution_time int64
+	var execution_time int32
 	err := row.Scan(&execution_time)
 	return execution_time, err
 }
@@ -87,7 +87,7 @@ RETURNING id, operation_type, execution_time
 `
 
 type UpdateOperationTimeParams struct {
-	ExecutionTime int64
+	ExecutionTime int32
 	OperationType string
 }
 

@@ -20,7 +20,7 @@ func HandlerGetOperations(w http.ResponseWriter, r *http.Request, dbCfg *config.
 func HandlerUpdateOperation(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {
 	type parametrs struct {
 		OperationType string `json:"operation_type"`
-		ExecutionTime int64  `json:"execution_time"`
+		ExecutionTime int32  `json:"execution_time"`
 	}
 
 	decoder := json.NewDecoder(r.Body)

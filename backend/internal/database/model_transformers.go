@@ -41,7 +41,7 @@ func DatabaseExpressionsToExpressions(dbExprs []Expression) []ExpressionTransfor
 type OperationTransformed struct {
 	ID            uuid.UUID `json:"id"`
 	OperationType string    `json:"operation_type"`
-	ExecutionTime int64     `json:"execution_time"`
+	ExecutionTime int32     `json:"execution_time"`
 }
 
 func DatabaseOperationToOperation(dbOper Operation) OperationTransformed {

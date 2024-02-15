@@ -92,6 +92,8 @@ func (a *Agent) PublishMessage(msg *ExpressionMessage) {
 	log.Println("Publishing message to Queue")
 	if err != nil {
 		log.Printf("Can't publish message to %s queue: %v", a.amqpProducer.Queue.Name, err)
+		a.kill <- struct{}{}
+		return
 	}
 }
 

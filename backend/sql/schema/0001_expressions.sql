@@ -6,7 +6,10 @@ CREATE TABLE expressions (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     data TEXT NOT NULL,
-    status expression_status NOT NULL
+    parse_data TEXT NOT NULL,
+    status expression_status NOT NULL,
+    result INT NOT NULL DEFAULT 0,
+    is_ready BOOLEAN NOT NULL DEFAULT False
 );
 
 

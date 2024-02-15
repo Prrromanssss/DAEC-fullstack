@@ -113,8 +113,8 @@ type Expression struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Data      string
-	Status    ExpressionStatus
 	ParseData string
+	Status    ExpressionStatus
 	Result    int32
 	IsReady   bool
 }
@@ -122,5 +122,5 @@ type Expression struct {
 type Operation struct {
 	ID            uuid.UUID
 	OperationType string
-	ExecutionTime int64
+	ExecutionTime int32
 }

@@ -15,7 +15,7 @@ import (
 const createExpression = `-- name: CreateExpression :one
 INSERT INTO expressions (id, created_at, updated_at, data, parse_data, status)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, created_at, updated_at, data, status, parse_data, result, is_ready
+RETURNING id, created_at, updated_at, data, parse_data, status, result, is_ready
 `
 
 type CreateExpressionParams struct {
@@ -42,8 +42,8 @@ func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionPara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Data,
-		&i.Status,
 		&i.ParseData,
+		&i.Status,
 		&i.Result,
 		&i.IsReady,
 	)
@@ -51,7 +51,7 @@ func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionPara
 }
 
 const getExpressionByID = `-- name: GetExpressionByID :one
-SELECT id, created_at, updated_at, data, status, parse_data, result, is_ready FROM expressions
+SELECT id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
 WHERE id = $1
 `
 
@@ -63,8 +63,8 @@ func (q *Queries) GetExpressionByID(ctx context.Context, id uuid.UUID) (Expressi
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Data,
-		&i.Status,
 		&i.ParseData,
+		&i.Status,
 		&i.Result,
 		&i.IsReady,
 	)
@@ -72,7 +72,7 @@ func (q *Queries) GetExpressionByID(ctx context.Context, id uuid.UUID) (Expressi
 }
 
 const getExpressions = `-- name: GetExpressions :many
-SELECT id, created_at, updated_at, data, status, parse_data, result, is_ready FROM expressions
+SELECT id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
 `
 
 func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {
@@ -89,8 +89,8 @@ func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Data,
-			&i.Status,
 			&i.ParseData,
+			&i.Status,
 			&i.Result,
 			&i.IsReady,
 		); err != nil {
@@ -134,7 +134,7 @@ const updateExpressionData = `-- name: UpdateExpressionData :one
 UPDATE expressions
 SET data = $1
 WHERE id = $2
-RETURNING id, created_at, updated_at, data, status, parse_data, result, is_ready
+RETURNING id, created_at, updated_at, data, parse_data, status, result, is_ready
 `
 
 type UpdateExpressionDataParams struct {
@@ -150,8 +150,8 @@ func (q *Queries) UpdateExpressionData(ctx context.Context, arg UpdateExpression
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Data,
-		&i.Status,
 		&i.ParseData,
+		&i.Status,
 		&i.Result,
 		&i.IsReady,
 	)
