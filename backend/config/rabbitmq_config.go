@@ -2,26 +2,25 @@ package config
 
 import (
 	"log"
-	"sync"
 
 	"github.com/streadway/amqp"
 )
 
 type AMQPConfig struct {
-	Conn   *amqp.Connection
-	Ch     *amqp.Channel
-	Queues map[string]amqp.Queue
-	mu     *sync.Mutex
+	Conn              *amqp.Connection
+	ChannelForProduce *amqp.Channel
+	ChannelForConsume *amqp.Channel
 }
 
 type AMQPConsumer struct {
-	Queue    amqp.Queue
-	Messages <-chan amqp.Delivery
+	Queue             amqp.Queue
+	Messages          <-chan amqp.Delivery
+	ChannelForConsume *amqp.Channel
 }
 
 type AMQPProducer struct {
-	Queue amqp.Queue
-	Ch    *amqp.Channel
+	Queue             amqp.Queue
+	ChannelForProduce *amqp.Channel
 }
 
 func NewAMQPConfig(amqpUrl string) (*AMQPConfig, error) {
@@ -33,22 +32,26 @@ func NewAMQPConfig(amqpUrl string) (*AMQPConfig, error) {
 
 	log.Println("Successfully connected to RabbitMQ instance")
 
-	ch, err := conn.Channel()
+	chProd, err := conn.Channel()
+	if err != nil {
+		log.Fatalf("Can't create a channel from RabbitMQ: %v", err)
+		return nil, err
+	}
+	chCons, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("Can't create a channel from RabbitMQ: %v", err)
 		return nil, err
 	}
 
 	return &AMQPConfig{
-		Conn:   conn,
-		Ch:     ch,
-		Queues: make(map[string]amqp.Queue),
-		mu:     &sync.Mutex{},
+		Conn:              conn,
+		ChannelForProduce: chProd,
+		ChannelForConsume: chCons,
 	}, nil
 }
 
-func NewAMQProducer(amqpCfg *AMQPConfig, queueName string) (*AMQPProducer, error) {
-	queue, err := amqpCfg.Ch.QueueDeclare(
+func NewAMQPProducer(amqpCfg *AMQPConfig, queueName string) (*AMQPProducer, error) {
+	queue, err := amqpCfg.ChannelForProduce.QueueDeclare(
 		queueName,
 		false,
 		false,
@@ -60,19 +63,14 @@ func NewAMQProducer(amqpCfg *AMQPConfig, queueName string) (*AMQPProducer, error
 		log.Fatalf("Can't create a RabbitMQ queue: %v", err)
 		return nil, err
 	}
-	amqpCfg.mu.Lock()
-	if _, ok := amqpCfg.Queues[queueName]; !ok {
-		amqpCfg.Queues[queueName] = queue
-	}
-	amqpCfg.mu.Unlock()
 	return &AMQPProducer{
-		Queue: queue,
-		Ch:    amqpCfg.Ch,
+		Queue:             queue,
+		ChannelForProduce: amqpCfg.ChannelForProduce,
 	}, nil
 }
 
 func NewAMQPConsumer(amqpCfg *AMQPConfig, queueName string) (*AMQPConsumer, error) {
-	queue, err := amqpCfg.Ch.QueueDeclare(
+	queue, err := amqpCfg.ChannelForConsume.QueueDeclare(
 		queueName,
 		false,
 		false,
@@ -84,12 +82,7 @@ func NewAMQPConsumer(amqpCfg *AMQPConfig, queueName string) (*AMQPConsumer, erro
 		log.Fatalf("Can't create a RabbitMQ queue: %v", err)
 		return nil, err
 	}
-	amqpCfg.mu.Lock()
-	if _, ok := amqpCfg.Queues[queueName]; !ok {
-		amqpCfg.Queues[queueName] = queue
-	}
-	amqpCfg.mu.Unlock()
-	msgs, err := amqpCfg.Ch.Consume(
+	msgs, err := amqpCfg.ChannelForConsume.Consume(
 		queue.Name,
 		"",
 		true,
@@ -103,7 +96,8 @@ func NewAMQPConsumer(amqpCfg *AMQPConfig, queueName string) (*AMQPConsumer, erro
 		return nil, err
 	}
 	return &AMQPConsumer{
-		Queue:    queue,
-		Messages: msgs,
+		Queue:             queue,
+		Messages:          msgs,
+		ChannelForConsume: amqpCfg.ChannelForConsume,
 	}, nil
 }

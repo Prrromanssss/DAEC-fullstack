@@ -62,14 +62,8 @@ func main() {
 		log.Fatal("RABBITMQ_URL is not found in environment")
 	}
 
-	amqpCfg, err := config.NewAMQPConfig(rabbitMQURL)
-
-	if err != nil {
-		log.Fatalf("Can't config RabbitMQ: %v", err)
-	}
-
 	agentAgregator := agent.NewAgentAgregator(
-		amqpCfg,
+		rabbitMQURL,
 		dbCfg,
 		"Queue for sending expressions to agents",
 		"Queue for consuming results and pings from agents",
@@ -87,7 +81,7 @@ func main() {
 
 	// Create Agent
 	agent1, err := agent.NewAgent(
-		amqpCfg,
+		rabbitMQURL,
 		dbCfg,
 		"Queue for sending expressions to agents",
 		"Queue for consuming results and pings from agents",

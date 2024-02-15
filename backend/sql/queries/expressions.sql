@@ -20,3 +20,8 @@ RETURNING *;
 UPDATE expressions
 SET parse_data = $1, result = $2, updated_at = $3, is_ready = True, status = 'result'
 WHERE id = $4;
+
+-- name: UpdateExpressionStatus :exec
+UPDATE expressions
+SET status = $1
+WHERE id = $2;

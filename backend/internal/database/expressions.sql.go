@@ -157,3 +157,19 @@ func (q *Queries) UpdateExpressionData(ctx context.Context, arg UpdateExpression
 	)
 	return i, err
 }
+
+const updateExpressionStatus = `-- name: UpdateExpressionStatus :exec
+UPDATE expressions
+SET status = $1
+WHERE id = $2
+`
+
+type UpdateExpressionStatusParams struct {
+	Status ExpressionStatus
+	ID     uuid.UUID
+}
+
+func (q *Queries) UpdateExpressionStatus(ctx context.Context, arg UpdateExpressionStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateExpressionStatus, arg.Status, arg.ID)
+	return err
+}
