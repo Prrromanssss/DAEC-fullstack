@@ -72,13 +72,32 @@ func main() {
 		amqpCfg,
 		dbCfg,
 		"Queue for sending expressions to agents",
-		"Queue for consuming results and pings from agents")
+		"Queue for consuming results and pings from agents",
+	)
 
 	go agent.AgregateAgents(agentAgregator)
 
 	if err != nil {
 		log.Fatalf("Can't connect to RabbitMQ: %v", err)
 	}
+
+	// Create operation
+
+	config.ConfigOperation(dbCfg)
+
+	// Create Agent
+	agent1, err := agent.NewAgent(
+		amqpCfg,
+		dbCfg,
+		"Queue for sending expressions to agents",
+		"Queue for consuming results and pings from agents",
+		5,
+	)
+	if err != nil {
+		log.Fatalf("Can't create agent: %v", err)
+	}
+
+	go agent.AgentService(agent1)
 
 	// Configuration http server
 

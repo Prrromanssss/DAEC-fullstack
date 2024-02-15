@@ -1,3 +1,9 @@
+-- name: CreateOperation :exec
+INSERT INTO operations (id, operation_type, execution_time)
+VALUES ($1, $2, $3)
+RETURNING *;
+
+
 -- name: UpdateOperationTime :one
 UPDATE operations
 SET execution_time = $1
@@ -9,4 +15,8 @@ SELECT * FROM operations;
 
 -- name: GetOperationTimeByType :one
 SELECT execution_time FROM operations
+WHERE operation_type = $1;
+
+-- name: GetOperationByType :one
+SELECT * FROM operations
 WHERE operation_type = $1;

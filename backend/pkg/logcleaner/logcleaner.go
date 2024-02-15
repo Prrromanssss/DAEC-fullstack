@@ -2,7 +2,6 @@ package logcleaner
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -22,14 +21,14 @@ func CleanLog(
 	for ; ; <-ticker.C {
 		file, err := os.Open(filePath)
 		if err != nil {
-			log.Fatal("Log file is not found in environment")
+			log.Fatalf("Log file is not found in environment: %v", err)
 		}
 		defer file.Close()
 
 		tmpFilename := filePath + ".tmp"
 		tmpFile, err := os.Create(tmpFilename)
 		if err != nil {
-			log.Println("Can't create temporary file:", err)
+			log.Fatalf("Can't create temporary file: %v", err)
 			return
 		}
 		defer os.Remove(tmpFilename)
@@ -43,17 +42,17 @@ func CleanLog(
 		}
 		for scanner.Scan() {
 			if _, err := tmpFile.WriteString(scanner.Text() + "\n"); err != nil {
-				fmt.Println("Can't write to temporary file:", err)
+				log.Fatalf("Can't write to temporary file: %v", err)
 				return
 			}
 		}
 
 		if err := scanner.Err(); err != nil {
-			fmt.Println("Can't read  source file:", err)
+			log.Fatalf("Can't read source file: %v", err)
 			return
 		}
 		if err := os.Rename(tmpFilename, filePath); err != nil {
-			fmt.Println("Can't rename temporary file:", err)
+			log.Fatalf("Can't rename temporary file: %v", err)
 			return
 		}
 

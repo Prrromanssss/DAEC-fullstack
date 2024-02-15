@@ -27,7 +27,7 @@ type AMQPProducer struct {
 func NewAMQPConfig(amqpUrl string) (*AMQPConfig, error) {
 	conn, err := amqp.Dial(amqpUrl)
 	if err != nil {
-		log.Printf("Can't connect to RabbitMQ: %v", err)
+		log.Fatalf("Can't connect to RabbitMQ: %v", err)
 		return nil, err
 	}
 
@@ -35,7 +35,7 @@ func NewAMQPConfig(amqpUrl string) (*AMQPConfig, error) {
 
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Printf("Can't create a channel from RabbitMQ: %v", err)
+		log.Fatalf("Can't create a channel from RabbitMQ: %v", err)
 		return nil, err
 	}
 
@@ -57,7 +57,7 @@ func NewAMQProducer(amqpCfg *AMQPConfig, queueName string) (*AMQPProducer, error
 		nil,
 	)
 	if err != nil {
-		log.Printf("Can't create a RabbitMQ queue: %v", err)
+		log.Fatalf("Can't create a RabbitMQ queue: %v", err)
 		return nil, err
 	}
 	amqpCfg.mu.Lock()
@@ -81,7 +81,7 @@ func NewAMQPConsumer(amqpCfg *AMQPConfig, queueName string) (*AMQPConsumer, erro
 		nil,
 	)
 	if err != nil {
-		log.Printf("Can't create a RabbitMQ queue: %v", err)
+		log.Fatalf("Can't create a RabbitMQ queue: %v", err)
 		return nil, err
 	}
 	amqpCfg.mu.Lock()
@@ -99,7 +99,7 @@ func NewAMQPConsumer(amqpCfg *AMQPConfig, queueName string) (*AMQPConsumer, erro
 		nil,
 	)
 	if err != nil {
-		log.Printf("Can't create a channel to consume messages from RabbitMQ: %v", err)
+		log.Fatalf("Can't create a channel to consume messages from RabbitMQ: %v", err)
 		return nil, err
 	}
 	return &AMQPConsumer{

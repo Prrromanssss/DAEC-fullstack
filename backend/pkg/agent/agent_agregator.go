@@ -73,7 +73,7 @@ func (aa *AgentAgregator) PublishMessage(expressionID uuid.UUID, token, expresss
 	}
 	jsonData, err := json.Marshal(msg)
 	if err != nil {
-		log.Printf("Failed to encode message to JSON: :%v", err)
+		log.Fatalf("Failed to encode message to JSON: %v", err)
 		return
 	}
 	err = aa.amqpProducer.Ch.Publish(
@@ -88,31 +88,31 @@ func (aa *AgentAgregator) PublishMessage(expressionID uuid.UUID, token, expresss
 	)
 	log.Println("Publishing message to Queue")
 	if err != nil {
-		log.Printf("Can't publish message to %s queue: %v", aa.amqpProducer.Queue.Name, err)
+		log.Fatalf("Can't publish message to %s queue: %v", aa.amqpProducer.Queue.Name, err)
+		return
 	}
 }
 
 func AgregateAgents(agentAg *AgentAgregator) {
 	defer agentAg.amqpConfig.Conn.Close()
 	defer agentAg.amqpConfig.Ch.Close()
-	log.Println("Initialize Agent Agregator")
 	for {
 		select {
 		case expressionMessage := <-agentAg.tasks:
 			log.Println("Consume message from orchestrator")
 			tokens := orchestrator.GetTokens(expressionMessage.Expression)
 			for _, token := range tokens {
-				log.Println("Consume token to queue")
+				log.Println("Consume token to queue: ", agentAg.amqpProducer.Queue.Name)
 				agentAg.PublishMessage(expressionMessage.ExpressionID, token, expressionMessage.Expression)
 			}
 		case msgFromAgents := <-agentAg.amqpConsumer.Messages:
 			err := msgFromAgents.Ack(false)
 			if err != nil {
-				log.Println("Error acknowledging message:", err)
+				log.Fatalf("Error acknowledging message: %v", err)
 			}
 			var exprMsg ExpressionMessage
 			if err := json.Unmarshal(msgFromAgents.Body, &exprMsg); err != nil {
-				log.Printf("Failed to parse JSON: %v", err)
+				log.Fatalf("Failed to parse JSON: %v", err)
 				continue
 			}
 			if exprMsg.IsPing {
@@ -121,16 +121,16 @@ func AgregateAgents(agentAg *AgentAgregator) {
 					LastPing: time.Now().UTC(),
 				})
 				if err != nil {
-					log.Printf("Can't update last ping: %v", err)
+					log.Fatalf("Can't update last ping: %v", err)
 				}
 			} else {
 				newExpr, newToken, err := orchestrator.InsertResultToToken(exprMsg.Expression, exprMsg.Token, exprMsg.Result)
 				if err != nil {
-					log.Printf("Can't get expression by id: %v", err)
+					log.Fatalf("Can't get expression by id: %v", err)
 				}
 				result, err := strconv.Atoi(newExpr)
 				if err != nil {
-					log.Printf("Can't convert result to int: %v", err)
+					log.Fatalf("Can't convert result to int: %v", err)
 				}
 
 				if orchestrator.IsNumber(newExpr) || (newExpr[0] == '-' && orchestrator.IsNumber(newExpr[1:])) {
@@ -141,7 +141,7 @@ func AgregateAgents(agentAg *AgentAgregator) {
 						ID:        exprMsg.ExpressionID,
 					})
 					if err != nil {
-						log.Printf("Can't make expression ready: %v", err)
+						log.Fatalf("Can't make expression ready: %v", err)
 					}
 					continue
 				}
@@ -155,7 +155,7 @@ func AgregateAgents(agentAg *AgentAgregator) {
 					Data: newExpr,
 				})
 				if err != nil {
-					log.Printf("Can't update expression data: %v", err)
+					log.Fatalf("Can't update expression data: %v", err)
 				}
 			}
 		}

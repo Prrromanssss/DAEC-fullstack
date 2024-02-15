@@ -7,7 +7,38 @@ package database
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
+
+const createOperation = `-- name: CreateOperation :exec
+INSERT INTO operations (id, operation_type, execution_time)
+VALUES ($1, $2, $3)
+RETURNING id, operation_type, execution_time
+`
+
+type CreateOperationParams struct {
+	ID            uuid.UUID
+	OperationType string
+	ExecutionTime int64
+}
+
+func (q *Queries) CreateOperation(ctx context.Context, arg CreateOperationParams) error {
+	_, err := q.db.ExecContext(ctx, createOperation, arg.ID, arg.OperationType, arg.ExecutionTime)
+	return err
+}
+
+const getOperationByType = `-- name: GetOperationByType :one
+SELECT id, operation_type, execution_time FROM operations
+WHERE operation_type = $1
+`
+
+func (q *Queries) GetOperationByType(ctx context.Context, operationType string) (Operation, error) {
+	row := q.db.QueryRowContext(ctx, getOperationByType, operationType)
+	var i Operation
+	err := row.Scan(&i.ID, &i.OperationType, &i.ExecutionTime)
+	return i, err
+}
 
 const getOperationTimeByType = `-- name: GetOperationTimeByType :one
 SELECT execution_time FROM operations

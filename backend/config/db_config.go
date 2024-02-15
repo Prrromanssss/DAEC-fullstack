@@ -21,6 +21,8 @@ func NewDBConfig(dbURL string) *DBConfig {
 
 	db := database.New(conn)
 
+	log.Println("Successfully connected to DB instance")
+
 	return &DBConfig{
 		DB: db,
 	}

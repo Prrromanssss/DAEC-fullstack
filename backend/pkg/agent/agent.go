@@ -25,6 +25,7 @@ type Agent struct {
 	simpleComputers                 chan *ExpressionMessage
 	amqpProducer                    *config.AMQPProducer
 	amqpConsumer                    *config.AMQPConsumer
+	kill                            chan struct{}
 }
 
 func NewAgent(
@@ -34,12 +35,12 @@ func NewAgent(
 	titleForResultAndPingQueue string,
 	numberOfParallelCalculations int32,
 ) (*Agent, error) {
-	amqpProd, err := config.NewAMQProducer(amqpCfg, titleForExpressionQueue)
+	amqpProd, err := config.NewAMQProducer(amqpCfg, titleForResultAndPingQueue)
 	if err != nil {
 		log.Printf("Cant't create NewAMQPProducer: %v", err)
 		return nil, err
 	}
-	amqpCons, err := config.NewAMQPConsumer(amqpCfg, titleForResultAndPingQueue)
+	amqpCons, err := config.NewAMQPConsumer(amqpCfg, titleForExpressionQueue)
 	if err != nil {
 		log.Printf("Cant't create NewAMQPConsumer: %v", err)
 		return nil, err
@@ -66,6 +67,7 @@ func NewAgent(
 		simpleComputers:                 make(chan *ExpressionMessage),
 		amqpProducer:                    amqpProd,
 		amqpConsumer:                    amqpCons,
+		kill:                            make(chan struct{}),
 	}, nil
 
 }
@@ -74,6 +76,7 @@ func (a *Agent) PublishMessage(msg *ExpressionMessage) {
 	jsonData, err := json.Marshal(msg)
 	if err != nil {
 		log.Printf("Failed to encode message to JSON: :%v", err)
+		a.kill <- struct{}{}
 		return
 	}
 	err = a.amqpProducer.Ch.Publish(
@@ -95,6 +98,17 @@ func (a *Agent) PublishMessage(msg *ExpressionMessage) {
 func AgentService(agent *Agent) {
 	for {
 		select {
+		case <-agent.kill:
+			log.Printf("Agent %s is down", agent.agentID)
+			agent.status = "terminated"
+			err := agent.dbConfig.DB.UpdateAgentStatus(context.Background(), database.UpdateAgentStatusParams{
+				ID:     agent.agentID,
+				Status: "terminated",
+			})
+			if err != nil {
+				log.Printf("Can't update status of agent to terminate: %v", err)
+			}
+			return
 		case result := <-agent.simpleComputers:
 			agent.PublishMessage(result)
 			agent.number_of_active_calculations--
@@ -106,12 +120,15 @@ func AgentService(agent *Agent) {
 				})
 				if err != nil {
 					log.Printf("Can't update agent status: %v", err)
+					agent.kill <- struct{}{}
+					continue
 				}
 			}
 		case msgFromAgentAgregator := <-agent.amqpConsumer.Messages:
 			var exprMsg ExpressionMessage
 			if err := json.Unmarshal(msgFromAgentAgregator.Body, &exprMsg); err != nil {
 				log.Printf("Failed to parse JSON: %v", err)
+				agent.kill <- struct{}{}
 				continue
 			}
 			if agent.number_of_active_calculations >= agent.number_of_parallel_calculations {
@@ -121,29 +138,41 @@ func AgentService(agent *Agent) {
 			err := msgFromAgentAgregator.Ack(false)
 			if err != nil {
 				log.Printf("Error acknowledging message: %v", err)
+				agent.kill <- struct{}{}
+				continue
 			}
 
 			tokenSplit := strings.Split(exprMsg.Token, " ")
 			if len(tokenSplit) != 3 {
 				log.Println("Invalid token")
+				agent.kill <- struct{}{}
+				continue
 			}
 			oper := tokenSplit[2]
 			if !(oper == "+" || oper == "-" || oper == "/" || oper == "*") {
 				log.Println("Operation in token doesn't match any of these +, -, /, *")
+				agent.kill <- struct{}{}
+				continue
 			}
 
 			digit1, err := strconv.Atoi(tokenSplit[0])
 			if err != nil {
 				log.Printf("Can't convert int to str: %v", err)
+				agent.kill <- struct{}{}
+				continue
 			}
 			digit2, err := strconv.Atoi(tokenSplit[1])
 			if err != nil {
 				log.Printf("Can't convert int to str: %v", err)
+				agent.kill <- struct{}{}
+				continue
 			}
 
 			time_for_oper, err := agent.dbConfig.DB.GetOperationTimeByType(context.Background(), oper)
 			if err != nil {
 				log.Printf("Can't get execution time by operation type: %v", err)
+				agent.kill <- struct{}{}
+				continue
 			}
 
 			timer := time.NewTimer(time.Duration(time_for_oper) * time.Second)
@@ -159,6 +188,8 @@ func AgentService(agent *Agent) {
 				})
 				if err != nil {
 					log.Printf("Can't update agent status: %v", err)
+					agent.kill <- struct{}{}
+					continue
 				}
 			} else if agent.status != "running" {
 				agent.status = "running"
@@ -168,6 +199,8 @@ func AgentService(agent *Agent) {
 				})
 				if err != nil {
 					log.Printf("Can't update agent status: %v", err)
+					agent.kill <- struct{}{}
+					continue
 				}
 			}
 

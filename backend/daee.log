@@ -1,0 +1,2 @@
+2024/02/15 20:02:14 Successfully connected to DB instance
+2024/02/15 20:02:17 Can't connect to RabbitMQ: Exception (403) Reason: "username or password not allowed"
