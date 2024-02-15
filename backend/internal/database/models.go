@@ -115,6 +115,8 @@ type Expression struct {
 	Data      string
 	Status    ExpressionStatus
 	ParseData string
+	Result    int32
+	IsReady   bool
 }
 
 type Operation struct {

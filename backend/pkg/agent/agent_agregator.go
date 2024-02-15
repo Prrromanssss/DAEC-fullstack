@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,12 +24,13 @@ type AgentAgregator struct {
 
 type MessageFromOrchestrator struct {
 	ExpressionID uuid.UUID `json:"expression_id"`
-	Expression   string    `json:"data"`
+	Expression   string    `json:"expression"`
 }
 
 type ExpressionMessage struct {
 	ExpressionID uuid.UUID `json:"expression_id"`
-	Token        string    `json:"data"`
+	Token        string    `json:"token"`
+	Expression   string    `json:"expression"`
 	Result       int       `json:"result"`
 	IsComputing  bool      `json:"is_computing"`
 	IsPing       bool      `json:"is_ping"`
@@ -63,10 +65,11 @@ func (aa *AgentAgregator) AddTask(expressionMessage MessageFromOrchestrator) {
 	aa.tasks <- expressionMessage
 }
 
-func (aa *AgentAgregator) PublishMessage(expressionID uuid.UUID, token string) {
+func (aa *AgentAgregator) PublishMessage(expressionID uuid.UUID, token, expresssion string) {
 	msg := ExpressionMessage{
 		ExpressionID: expressionID,
 		Token:        token,
+		Expression:   expresssion,
 	}
 	jsonData, err := json.Marshal(msg)
 	if err != nil {
@@ -97,7 +100,7 @@ func AgregateAgents(agentAg *AgentAgregator) {
 		case expressionMessage := <-agentAg.tasks:
 			tokens := orchestrator.GetTokens(expressionMessage.Expression)
 			for _, token := range tokens {
-				agentAg.PublishMessage(expressionMessage.ExpressionID, token)
+				agentAg.PublishMessage(expressionMessage.ExpressionID, token, expressionMessage.Expression)
 			}
 		case msgResOrPing := <-agentAg.amqpConsumer.Messages:
 			var exprMsg ExpressionMessage
@@ -114,18 +117,32 @@ func AgregateAgents(agentAg *AgentAgregator) {
 					log.Printf("Can't update last ping: %v", err)
 				}
 			} else {
-				parseExpr, err := agentAg.dbConfig.DB.GetExpressionByID(context.Background(), exprMsg.ExpressionID)
+				newExpr, newToken, err := orchestrator.InsertResultToToken(exprMsg.Expression, exprMsg.Token, exprMsg.Result)
 				if err != nil {
 					log.Printf("Can't get expression by id: %v", err)
 				}
-				newExpr, newToken, err := orchestrator.InsertResultToToken(parseExpr.Data, exprMsg.Token, exprMsg.Result)
+				result, err := strconv.Atoi(newExpr)
 				if err != nil {
-					log.Printf("Can't get expression by id: %v", err)
+					log.Printf("Can't convert result to int: %v", err)
+				}
+
+				if orchestrator.IsNumber(newExpr) || (newExpr[0] == '-' && orchestrator.IsNumber(newExpr[1:])) {
+					_, err := agentAg.dbConfig.DB.MakeExpressionReady(context.Background(), database.MakeExpressionReadyParams{
+						ParseData: "",
+						Result:    int32(result),
+						UpdatedAt: time.Now().UTC(),
+						ID:        exprMsg.ExpressionID,
+					})
+					if err != nil {
+						log.Printf("Can't make expression ready: %v", err)
+					}
+					continue
 				}
 
 				if newToken != "" {
-					agentAg.PublishMessage(exprMsg.ExpressionID, newToken)
+					agentAg.PublishMessage(exprMsg.ExpressionID, newToken, newExpr)
 				}
+
 				_, err = agentAg.dbConfig.DB.UpdateExpressionData(context.Background(), database.UpdateExpressionDataParams{
 					ID:   exprMsg.ExpressionID,
 					Data: newExpr,

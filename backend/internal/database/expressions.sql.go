@@ -15,7 +15,7 @@ import (
 const createExpression = `-- name: CreateExpression :one
 INSERT INTO expressions (id, created_at, updated_at, data, parse_data, status)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, created_at, updated_at, data, status, parse_data
+RETURNING id, created_at, updated_at, data, status, parse_data, result, is_ready
 `
 
 type CreateExpressionParams struct {
@@ -44,12 +44,14 @@ func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionPara
 		&i.Data,
 		&i.Status,
 		&i.ParseData,
+		&i.Result,
+		&i.IsReady,
 	)
 	return i, err
 }
 
 const getExpressionByID = `-- name: GetExpressionByID :one
-SELECT id, created_at, updated_at, data, status, parse_data FROM expressions
+SELECT id, created_at, updated_at, data, status, parse_data, result, is_ready FROM expressions
 WHERE id = $1
 `
 
@@ -63,12 +65,14 @@ func (q *Queries) GetExpressionByID(ctx context.Context, id uuid.UUID) (Expressi
 		&i.Data,
 		&i.Status,
 		&i.ParseData,
+		&i.Result,
+		&i.IsReady,
 	)
 	return i, err
 }
 
 const getExpressions = `-- name: GetExpressions :many
-SELECT id, created_at, updated_at, data, status, parse_data FROM expressions
+SELECT id, created_at, updated_at, data, status, parse_data, result, is_ready FROM expressions
 `
 
 func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {
@@ -87,6 +91,8 @@ func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {
 			&i.Data,
 			&i.Status,
 			&i.ParseData,
+			&i.Result,
+			&i.IsReady,
 		); err != nil {
 			return nil, err
 		}
@@ -101,11 +107,46 @@ func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {
 	return items, nil
 }
 
+const makeExpressionReady = `-- name: MakeExpressionReady :one
+UPDATE expressions
+SET parse_data = $1, result = $2, updated_at = $3, is_ready = True, status = 'result'
+WHERE id = $4
+RETURNING id, created_at, updated_at, data, status, parse_data, result, is_ready
+`
+
+type MakeExpressionReadyParams struct {
+	ParseData string
+	Result    int32
+	UpdatedAt time.Time
+	ID        uuid.UUID
+}
+
+func (q *Queries) MakeExpressionReady(ctx context.Context, arg MakeExpressionReadyParams) (Expression, error) {
+	row := q.db.QueryRowContext(ctx, makeExpressionReady,
+		arg.ParseData,
+		arg.Result,
+		arg.UpdatedAt,
+		arg.ID,
+	)
+	var i Expression
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Data,
+		&i.Status,
+		&i.ParseData,
+		&i.Result,
+		&i.IsReady,
+	)
+	return i, err
+}
+
 const updateExpressionData = `-- name: UpdateExpressionData :one
 UPDATE expressions
 SET data = $1
 WHERE id = $2
-RETURNING id, created_at, updated_at, data, status, parse_data
+RETURNING id, created_at, updated_at, data, status, parse_data, result, is_ready
 `
 
 type UpdateExpressionDataParams struct {
@@ -123,6 +164,8 @@ func (q *Queries) UpdateExpressionData(ctx context.Context, arg UpdateExpression
 		&i.Data,
 		&i.Status,
 		&i.ParseData,
+		&i.Result,
+		&i.IsReady,
 	)
 	return i, err
 }

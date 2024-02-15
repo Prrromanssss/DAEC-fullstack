@@ -107,7 +107,7 @@ func orderPlusMinus(expression string) []rune {
 	return res
 }
 
-func isNumber(s string) bool {
+func IsNumber(s string) bool {
 	_, err := strconv.ParseFloat(s, 64)
 	return err == nil
 }
@@ -129,23 +129,23 @@ func addBrackets(expression string) string {
 		currentSymbol := parts[ind]
 
 		if ind == 0 &&
-			isNumber(currentSymbol) &&
-			isNumber(parts[ind+1]) &&
+			IsNumber(currentSymbol) &&
+			IsNumber(parts[ind+1]) &&
 			sliceOfOrdersPlusMinus[indForOrdersPlusMinus+1] == '+' {
 
 			result += "(" + currentSymbol + currentOperator + parts[ind+1] + ")"
 			indForOrdersPlusMinus++
 			ind++
 		} else if ind == 0 &&
-			((isNumber(currentSymbol) && !isNumber(parts[ind+1])) ||
-				!isNumber(currentSymbol)) {
+			((IsNumber(currentSymbol) && !IsNumber(parts[ind+1])) ||
+				!IsNumber(currentSymbol)) {
 
 			result += currentSymbol
 		} else if ind == 0 {
 			result += currentSymbol
 		} else if ind+1 < length &&
-			isNumber(currentSymbol) &&
-			isNumber(parts[ind+1]) &&
+			IsNumber(currentSymbol) &&
+			IsNumber(parts[ind+1]) &&
 			currentOperator == "+" &&
 			(indForOrdersPlusMinus+2 >= len(sliceOfOrdersPlusMinus) ||
 				sliceOfOrdersPlusMinus[indForOrdersPlusMinus+2] == '+') {
