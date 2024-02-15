@@ -8,11 +8,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type ApiConfig struct {
+type DBConfig struct {
 	DB *database.Queries
 }
 
-func NewApiConfig(dbURL string) *ApiConfig {
+func NewDBConfig(dbURL string) *DBConfig {
 	conn, err := sql.Open("postgres", dbURL)
 
 	if err != nil {
@@ -21,7 +21,7 @@ func NewApiConfig(dbURL string) *ApiConfig {
 
 	db := database.New(conn)
 
-	return &ApiConfig{
+	return &DBConfig{
 		DB: db,
 	}
 }

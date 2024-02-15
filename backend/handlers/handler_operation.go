@@ -8,8 +8,8 @@ import (
 	"net/http"
 )
 
-func HandlerGetOperations(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
-	operations, err := apiCfg.DB.GetOperations(r.Context())
+func HandlerGetOperations(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {
+	operations, err := dbCfg.DB.GetOperations(r.Context())
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Couldn't get operations: %v", err))
 		return
@@ -17,7 +17,7 @@ func HandlerGetOperations(w http.ResponseWriter, r *http.Request, apiCfg *config
 	respondWithJson(w, 200, database.DatabaseOperationsToOperations(operations))
 }
 
-func HandlerUpdateOperation(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
+func HandlerUpdateOperation(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {
 	type parametrs struct {
 		OperationType string `json:"operation_type"`
 		ExecutionTime int64  `json:"execution_time"`
@@ -30,7 +30,7 @@ func HandlerUpdateOperation(w http.ResponseWriter, r *http.Request, apiCfg *conf
 		respondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
 	}
 
-	operation, err := apiCfg.DB.UpdateOperationTime(r.Context(), database.UpdateOperationTimeParams{
+	operation, err := dbCfg.DB.UpdateOperationTime(r.Context(), database.UpdateOperationTimeParams{
 		OperationType: params.OperationType,
 		ExecutionTime: params.ExecutionTime,
 	})

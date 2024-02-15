@@ -18,7 +18,7 @@ import (
 func HandlerCreateExpression(
 	w http.ResponseWriter,
 	r *http.Request,
-	apiCfg *config.ApiConfig,
+	dbCfg *config.DBConfig,
 	agentAgr *agent.AgentAgregator,
 ) {
 	type parametrs struct {
@@ -33,16 +33,16 @@ func HandlerCreateExpression(
 	}
 
 	parseData, err := orchestrator.ParseExpression(params.Data)
-	id := uuid.New()
+	expression_id := uuid.New()
 
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Error parsing expression: %v", err))
 		return
 	}
 
-	expression, err := apiCfg.DB.CreateExpression(r.Context(),
+	expression, err := dbCfg.DB.CreateExpression(r.Context(),
 		database.CreateExpressionParams{
-			ID:        id,
+			ID:        expression_id,
 			CreatedAt: time.Now().UTC(),
 			UpdatedAt: time.Now().UTC(),
 			Data:      params.Data,
@@ -56,8 +56,8 @@ func HandlerCreateExpression(
 	}
 
 	msgToQueue := agent.MessageFromOrchestrator{
-		ID:         id,
-		Expression: params.Data,
+		ExpressionID: expression_id,
+		Expression:   params.Data,
 	}
 
 	agentAgr.AddTask(msgToQueue)
@@ -66,14 +66,14 @@ func HandlerCreateExpression(
 	respondWithJson(w, 201, database.DatabaseExpressionToExpression(expression))
 }
 
-func HandlerGetExpressionByID(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
+func HandlerGetExpressionByID(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {
 	expressionIDString := chi.URLParam(r, "expressionID")
 	expressionID, err := uuid.Parse(expressionIDString)
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Couldn't parse expression id: %v", err))
 		return
 	}
-	expression, err := apiCfg.DB.GetExpressionByID(r.Context(), expressionID)
+	expression, err := dbCfg.DB.GetExpressionByID(r.Context(), expressionID)
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Couldn't get expression: %v", err))
 		return
@@ -81,8 +81,8 @@ func HandlerGetExpressionByID(w http.ResponseWriter, r *http.Request, apiCfg *co
 	respondWithJson(w, 200, database.DatabaseExpressionToExpression(expression))
 }
 
-func HandlerGetExpressions(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
-	expressions, err := apiCfg.DB.GetExpressions(r.Context())
+func HandlerGetExpressions(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {
+	expressions, err := dbCfg.DB.GetExpressions(r.Context())
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Couldn't get expressions: %v", err))
 		return

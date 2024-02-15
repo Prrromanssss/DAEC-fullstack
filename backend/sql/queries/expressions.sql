@@ -9,3 +9,9 @@ SELECT * FROM expressions;
 -- name: GetExpressionByID :one
 SELECT * FROM expressions
 WHERE id = $1;
+
+-- name: UpdateExpressionData :one
+UPDATE expressions
+SET data = $1
+WHERE id = $2
+RETURNING *;

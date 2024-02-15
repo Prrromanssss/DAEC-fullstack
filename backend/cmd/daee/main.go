@@ -50,7 +50,7 @@ func main() {
 		log.Fatal("DB_URL is not found in environment")
 	}
 
-	apiCfg := config.NewApiConfig(dbURL)
+	dbCfg := config.NewDBConfig(dbURL)
 
 	go logcleaner.CleanLog(10*time.Minute, logPath, 100)
 
@@ -70,6 +70,7 @@ func main() {
 
 	agentAgregator := agent.NewAgentAgregator(
 		amqpCfg,
+		dbCfg,
 		"Queue for sending expressions to agents",
 		"Queue for consuming results and pings from agents")
 
@@ -94,15 +95,15 @@ func main() {
 
 	v1Router := chi.NewRouter()
 
-	v1Router.Post("/expressions", handlers.MiddlewareAgentAgregatorAndApiConfig(handlers.HandlerCreateExpression, apiCfg, agentAgregator))
-	v1Router.Get("/expressions", handlers.MiddlewareApiConfig(handlers.HandlerGetExpressions, apiCfg))
-	v1Router.Get("/expressions/{expressionID}", handlers.MiddlewareApiConfig(handlers.HandlerGetExpressionByID, apiCfg))
+	v1Router.Post("/expressions", handlers.MiddlewareAgentAgregatorAndDBConfig(handlers.HandlerCreateExpression, dbCfg, agentAgregator))
+	v1Router.Get("/expressions", handlers.MiddlewareApiConfig(handlers.HandlerGetExpressions, dbCfg))
+	v1Router.Get("/expressions/{expressionID}", handlers.MiddlewareApiConfig(handlers.HandlerGetExpressionByID, dbCfg))
 
-	v1Router.Get("/operations", handlers.MiddlewareApiConfig(handlers.HandlerGetOperations, apiCfg))
-	v1Router.Put("/operations", handlers.MiddlewareApiConfig(handlers.HandlerUpdateOperation, apiCfg))
+	v1Router.Get("/operations", handlers.MiddlewareApiConfig(handlers.HandlerGetOperations, dbCfg))
+	v1Router.Put("/operations", handlers.MiddlewareApiConfig(handlers.HandlerUpdateOperation, dbCfg))
 
-	v1Router.Get("/agents", handlers.MiddlewareApiConfig(handlers.HandlerGetAgents, apiCfg))
-	v1Router.Get("/agents/{agentID}", handlers.MiddlewareApiConfig(handlers.HandlerGetAgentByID, apiCfg))
+	v1Router.Get("/agents", handlers.MiddlewareApiConfig(handlers.HandlerGetAgents, dbCfg))
+	v1Router.Get("/agents/{agentID}", handlers.MiddlewareApiConfig(handlers.HandlerGetAgentByID, dbCfg))
 
 	router.Mount("/v1", v1Router)
 

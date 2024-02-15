@@ -6,10 +6,10 @@ import (
 	"net/http"
 )
 
-type agentAgregatorAndApiConfigHandler func(http.ResponseWriter, *http.Request, *config.ApiConfig, *agent.AgentAgregator)
+type agentAgregatorAndDBConfigHandler func(http.ResponseWriter, *http.Request, *config.DBConfig, *agent.AgentAgregator)
 
-func MiddlewareAgentAgregatorAndApiConfig(handler agentAgregatorAndApiConfigHandler, apiCfg *config.ApiConfig, agentAgr *agent.AgentAgregator) http.HandlerFunc {
+func MiddlewareAgentAgregatorAndDBConfig(handler agentAgregatorAndDBConfigHandler, dbCfg *config.DBConfig, agentAgr *agent.AgentAgregator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r, apiCfg, agentAgr)
+		handler(w, r, dbCfg, agentAgr)
 	}
 }

@@ -100,3 +100,29 @@ func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {
 	}
 	return items, nil
 }
+
+const updateExpressionData = `-- name: UpdateExpressionData :one
+UPDATE expressions
+SET data = $1
+WHERE id = $2
+RETURNING id, created_at, updated_at, data, status, parse_data
+`
+
+type UpdateExpressionDataParams struct {
+	Data string
+	ID   uuid.UUID
+}
+
+func (q *Queries) UpdateExpressionData(ctx context.Context, arg UpdateExpressionDataParams) (Expression, error) {
+	row := q.db.QueryRowContext(ctx, updateExpressionData, arg.Data, arg.ID)
+	var i Expression
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Data,
+		&i.Status,
+		&i.ParseData,
+	)
+	return i, err
+}

@@ -10,8 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func HandlerGetAgents(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
-	agents, err := apiCfg.DB.GetAgents(r.Context())
+func HandlerGetAgents(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {
+	agents, err := dbCfg.DB.GetAgents(r.Context())
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Couldn't get agents: %v", err))
 		return
@@ -19,14 +19,14 @@ func HandlerGetAgents(w http.ResponseWriter, r *http.Request, apiCfg *config.Api
 	respondWithJson(w, 200, database.DatabaseAgentsToAgents(agents))
 }
 
-func HandlerGetAgentByID(w http.ResponseWriter, r *http.Request, apiCfg *config.ApiConfig) {
+func HandlerGetAgentByID(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {
 	agentIDString := chi.URLParam(r, "agentID")
 	agentID, err := uuid.Parse(agentIDString)
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Couldn't parse agent id: %v", err))
 		return
 	}
-	agent, err := apiCfg.DB.GetAgentByID(r.Context(), agentID)
+	agent, err := dbCfg.DB.GetAgentByID(r.Context(), agentID)
 	if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Couldn't get agent: %v", err))
 		return
