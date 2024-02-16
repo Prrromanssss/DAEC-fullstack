@@ -85,7 +85,7 @@ func NewAMQPConsumer(amqpCfg *AMQPConfig, queueName string) (*AMQPConsumer, erro
 	msgs, err := amqpCfg.ChannelForConsume.Consume(
 		queue.Name,
 		"",
-		true,
+		false,
 		false,
 		false,
 		false,

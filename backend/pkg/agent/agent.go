@@ -228,9 +228,7 @@ func AgentService(agent *Agent) {
 						return
 					}
 				}
-
 			}(msgFromAgentAgregator)
-
 		}
 	}()
 

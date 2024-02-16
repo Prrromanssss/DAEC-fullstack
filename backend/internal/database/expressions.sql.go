@@ -130,11 +130,10 @@ func (q *Queries) MakeExpressionReady(ctx context.Context, arg MakeExpressionRea
 	return err
 }
 
-const updateExpressionData = `-- name: UpdateExpressionData :one
+const updateExpressionData = `-- name: UpdateExpressionData :exec
 UPDATE expressions
 SET data = $1
 WHERE id = $2
-RETURNING id, created_at, updated_at, data, parse_data, status, result, is_ready
 `
 
 type UpdateExpressionDataParams struct {
@@ -142,20 +141,25 @@ type UpdateExpressionDataParams struct {
 	ID   uuid.UUID
 }
 
-func (q *Queries) UpdateExpressionData(ctx context.Context, arg UpdateExpressionDataParams) (Expression, error) {
-	row := q.db.QueryRowContext(ctx, updateExpressionData, arg.Data, arg.ID)
-	var i Expression
-	err := row.Scan(
-		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Data,
-		&i.ParseData,
-		&i.Status,
-		&i.Result,
-		&i.IsReady,
-	)
-	return i, err
+func (q *Queries) UpdateExpressionData(ctx context.Context, arg UpdateExpressionDataParams) error {
+	_, err := q.db.ExecContext(ctx, updateExpressionData, arg.Data, arg.ID)
+	return err
+}
+
+const updateExpressionParseData = `-- name: UpdateExpressionParseData :exec
+UPDATE expressions
+SET parse_data = $1
+WHERE id = $2
+`
+
+type UpdateExpressionParseDataParams struct {
+	ParseData string
+	ID        uuid.UUID
+}
+
+func (q *Queries) UpdateExpressionParseData(ctx context.Context, arg UpdateExpressionParseDataParams) error {
+	_, err := q.db.ExecContext(ctx, updateExpressionParseData, arg.ParseData, arg.ID)
+	return err
 }
 
 const updateExpressionStatus = `-- name: UpdateExpressionStatus :exec

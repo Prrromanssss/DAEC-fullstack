@@ -62,6 +62,7 @@ func InsertResultToToken(parseExpression, token string, result int) (string, str
 	}
 	for ind < len(tokens) {
 		res = append(res, tokens[ind])
+		ind++
 	}
 	if !isTokenFind {
 		return "", "", errors.New("can't find token")

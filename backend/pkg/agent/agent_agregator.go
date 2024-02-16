@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,6 +24,7 @@ type AgentAgregator struct {
 	tasks                      chan MessageFromOrchestrator
 	amqpProducer               *config.AMQPProducer
 	amqpConsumer               *config.AMQPConsumer
+	mu                         *sync.Mutex
 }
 
 type MessageFromOrchestrator struct {
@@ -68,6 +70,7 @@ func NewAgentAgregator(
 		tasks:                      make(chan MessageFromOrchestrator),
 		amqpProducer:               amqpProd,
 		amqpConsumer:               amqpCons,
+		mu:                         &sync.Mutex{},
 	}
 }
 
@@ -155,14 +158,35 @@ func AgregateAgents(agentAg *AgentAgregator) {
 						log.Fatalf("Can't update last ping: %v", err)
 					}
 				} else {
+					agentAg.mu.Lock()
+					expression, err := agentAg.dbConfig.DB.GetExpressionByID(context.Background(), exprMsg.ExpressionID)
+					if err != nil {
+						agentAg.mu.Unlock()
+						log.Printf("Can't get expression by id: %v", err)
+						return
+					}
+
 					newExpr, newToken, err := orchestrator.InsertResultToToken(
-						exprMsg.Expression,
+						expression.ParseData,
 						exprMsg.Token,
 						exprMsg.Result,
 					)
 					if err != nil {
-						log.Fatalf("Can't get expression by id: %v", err)
+						log.Fatalf("Can't insert tokens to expression: %v", err)
 					}
+
+					err = agentAg.dbConfig.DB.UpdateExpressionParseData(
+						context.Background(),
+						database.UpdateExpressionParseDataParams{
+							ID:        exprMsg.ExpressionID,
+							ParseData: newExpr,
+						})
+
+					if err != nil {
+						log.Fatalf("Can't update expression data: %v", err)
+					}
+					agentAg.mu.Unlock()
+
 					result, err := strconv.Atoi(newExpr)
 					if err == nil &&
 						orchestrator.IsNumber(newExpr) ||
@@ -185,15 +209,6 @@ func AgregateAgents(agentAg *AgentAgregator) {
 						agentAg.PublishMessage(exprMsg.ExpressionID, newToken, newExpr)
 					}
 
-					_, err = agentAg.dbConfig.DB.UpdateExpressionData(
-						context.Background(),
-						database.UpdateExpressionDataParams{
-							ID:   exprMsg.ExpressionID,
-							Data: newExpr,
-						})
-					if err != nil {
-						log.Fatalf("Can't update expression data: %v", err)
-					}
 				}
 			}(msgFromAgents)
 		}

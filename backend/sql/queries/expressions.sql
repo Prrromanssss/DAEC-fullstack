@@ -10,11 +10,15 @@ SELECT * FROM expressions;
 SELECT * FROM expressions
 WHERE id = $1;
 
--- name: UpdateExpressionData :one
+-- name: UpdateExpressionData :exec
 UPDATE expressions
 SET data = $1
-WHERE id = $2
-RETURNING *;
+WHERE id = $2;
+
+-- name: UpdateExpressionParseData :exec
+UPDATE expressions
+SET parse_data = $1
+WHERE id = $2;
 
 -- name: MakeExpressionReady :exec
 UPDATE expressions
