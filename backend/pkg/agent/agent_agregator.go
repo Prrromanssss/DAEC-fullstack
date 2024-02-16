@@ -16,15 +16,12 @@ import (
 )
 
 type AgentAgregator struct {
-	rabbitMQURL                string
-	titleForExpressionQueue    string
-	titleForResultAndPingQueue string
-	amqpConfig                 *config.AMQPConfig
-	dbConfig                   *config.DBConfig
-	tasks                      chan MessageFromOrchestrator
-	amqpProducer               *config.AMQPProducer
-	amqpConsumer               *config.AMQPConsumer
-	mu                         *sync.Mutex
+	amqpConfig   *config.AMQPConfig
+	dbConfig     *config.DBConfig
+	tasks        chan MessageFromOrchestrator
+	amqpProducer *config.AMQPProducer
+	amqpConsumer *config.AMQPConsumer
+	mu           *sync.Mutex
 }
 
 type MessageFromOrchestrator struct {
@@ -37,7 +34,6 @@ type ExpressionMessage struct {
 	Token        string    `json:"token"`
 	Expression   string    `json:"expression"`
 	Result       int       `json:"result"`
-	IsComputing  bool      `json:"is_computing"`
 	IsPing       bool      `json:"is_ping"`
 	AgentID      uuid.UUID `json:"agent_id"`
 }
@@ -50,50 +46,25 @@ func NewAgentAgregator(
 ) *AgentAgregator {
 	amqpCfg, err := config.NewAMQPConfig(rabbitMQURL)
 	if err != nil {
-		log.Fatalf("Can't create NewAMQPConfig: %v", err)
+		log.Fatalf("Can't create NewAMQPConfig for Agent Agregator: %v", err)
 	}
 	amqpProd, err := config.NewAMQPProducer(amqpCfg, titleForExpressionQueue)
 	if err != nil {
-		log.Fatalf("Can't create NewAMQPProducer: %v", err)
+		log.Fatalf("Can't create NewAMQPProducer for Agent Agregator: %v", err)
 	}
 	amqpCons, err := config.NewAMQPConsumer(amqpCfg, titleForResultAndPingQueue)
 	if err != nil {
-		log.Fatalf("Can't create NewAMQPConsumer: %v", err)
+		log.Fatalf("Can't create NewAMQPConsumer for Agent Agregator: %v", err)
 	}
 
 	return &AgentAgregator{
-		rabbitMQURL:                rabbitMQURL,
-		titleForExpressionQueue:    titleForExpressionQueue,
-		titleForResultAndPingQueue: titleForResultAndPingQueue,
-		amqpConfig:                 amqpCfg,
-		dbConfig:                   dbCfg,
-		tasks:                      make(chan MessageFromOrchestrator),
-		amqpProducer:               amqpProd,
-		amqpConsumer:               amqpCons,
-		mu:                         &sync.Mutex{},
+		amqpConfig:   amqpCfg,
+		dbConfig:     dbCfg,
+		tasks:        make(chan MessageFromOrchestrator),
+		amqpProducer: amqpProd,
+		amqpConsumer: amqpCons,
+		mu:           &sync.Mutex{},
 	}
-}
-
-func (aa *AgentAgregator) Reconnect() {
-	aa.amqpConfig.ChannelForConsume.Close()
-	aa.amqpConfig.ChannelForProduce.Close()
-	aa.amqpConfig.Conn.Close()
-
-	amqpCfg, err := config.NewAMQPConfig(aa.rabbitMQURL)
-	if err != nil {
-		log.Fatalf("Can't create NewAMQPConfig: %v", err)
-	}
-	amqpProd, err := config.NewAMQPProducer(amqpCfg, aa.titleForExpressionQueue)
-	if err != nil {
-		log.Fatalf("Can't create NewAMQPProducer: %v", err)
-	}
-	amqpCons, err := config.NewAMQPConsumer(amqpCfg, aa.titleForResultAndPingQueue)
-	if err != nil {
-		log.Fatalf("Can't create NewAMQPConsumer: %v", err)
-	}
-	aa.amqpConfig = amqpCfg
-	aa.amqpConsumer = amqpCons
-	aa.amqpProducer = amqpProd
 }
 
 func (aa *AgentAgregator) AddTask(expressionMessage MessageFromOrchestrator) {
@@ -126,7 +97,7 @@ func (aa *AgentAgregator) PublishMessage(expressionID uuid.UUID, token, expresss
 		log.Fatalf("Can't publish message to %s queue: %v", aa.amqpProducer.Queue.Name, err)
 		return
 	}
-	log.Printf("Publishing message to Queue: %s", aa.amqpProducer.Queue.Name)
+	log.Printf("Publishing message to Queue: %s from Agent Agregator", aa.amqpProducer.Queue.Name)
 }
 
 func AgregateAgents(agentAg *AgentAgregator) {
@@ -145,7 +116,6 @@ func AgregateAgents(agentAg *AgentAgregator) {
 				var exprMsg ExpressionMessage
 				if err := json.Unmarshal(msgFromAgents.Body, &exprMsg); err != nil {
 					log.Fatalf("Failed to parse JSON: %v", err)
-					return
 				}
 				if exprMsg.IsPing {
 					err := agentAg.dbConfig.DB.UpdateAgentLastPing(
@@ -159,7 +129,10 @@ func AgregateAgents(agentAg *AgentAgregator) {
 					}
 				} else {
 					agentAg.mu.Lock()
-					expression, err := agentAg.dbConfig.DB.GetExpressionByID(context.Background(), exprMsg.ExpressionID)
+					expression, err := agentAg.dbConfig.DB.GetExpressionByID(
+						context.Background(),
+						exprMsg.ExpressionID,
+					)
 					if err != nil {
 						agentAg.mu.Unlock()
 						log.Printf("Can't get expression by id: %v", err)
@@ -188,6 +161,7 @@ func AgregateAgents(agentAg *AgentAgregator) {
 					agentAg.mu.Unlock()
 
 					result, err := strconv.Atoi(newExpr)
+
 					if err == nil &&
 						orchestrator.IsNumber(newExpr) ||
 						(newExpr[0] == '-' && orchestrator.IsNumber(newExpr[1:])) {
@@ -208,7 +182,6 @@ func AgregateAgents(agentAg *AgentAgregator) {
 					if newToken != "" {
 						agentAg.PublishMessage(exprMsg.ExpressionID, newToken, newExpr)
 					}
-
 				}
 			}(msgFromAgents)
 		}

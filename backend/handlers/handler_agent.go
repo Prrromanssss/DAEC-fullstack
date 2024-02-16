@@ -5,9 +5,6 @@ import (
 	"Prrromanssss/DAEE/internal/database"
 	"fmt"
 	"net/http"
-
-	"github.com/go-chi/chi"
-	"github.com/google/uuid"
 )
 
 func HandlerGetAgents(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {
@@ -17,19 +14,4 @@ func HandlerGetAgents(w http.ResponseWriter, r *http.Request, dbCfg *config.DBCo
 		return
 	}
 	respondWithJson(w, 200, database.DatabaseAgentsToAgents(agents))
-}
-
-func HandlerGetAgentByID(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {
-	agentIDString := chi.URLParam(r, "agentID")
-	agentID, err := uuid.Parse(agentIDString)
-	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Couldn't parse agent id: %v", err))
-		return
-	}
-	agent, err := dbCfg.DB.GetAgentByID(r.Context(), agentID)
-	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Couldn't get agent: %v", err))
-		return
-	}
-	respondWithJson(w, 200, database.DatabaseAgentToAgent(agent))
 }

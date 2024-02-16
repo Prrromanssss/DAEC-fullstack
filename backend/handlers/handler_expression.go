@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 )
 
@@ -63,21 +62,6 @@ func HandlerCreateExpression(
 	log.Println("Send message from orchestrator to agent agregator")
 
 	respondWithJson(w, 201, database.DatabaseExpressionToExpression(expression))
-}
-
-func HandlerGetExpressionByID(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {
-	expressionIDString := chi.URLParam(r, "expressionID")
-	expressionID, err := uuid.Parse(expressionIDString)
-	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Couldn't parse expression id: %v", err))
-		return
-	}
-	expression, err := dbCfg.DB.GetExpressionByID(r.Context(), expressionID)
-	if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Couldn't get expression: %v", err))
-		return
-	}
-	respondWithJson(w, 200, database.DatabaseExpressionToExpression(expression))
 }
 
 func HandlerGetExpressions(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {

@@ -13,9 +13,8 @@ type AMQPConfig struct {
 }
 
 type AMQPConsumer struct {
-	Queue             amqp.Queue
-	Messages          <-chan amqp.Delivery
-	ChannelForConsume *amqp.Channel
+	Queue    amqp.Queue
+	Messages <-chan amqp.Delivery
 }
 
 type AMQPProducer struct {
@@ -96,8 +95,7 @@ func NewAMQPConsumer(amqpCfg *AMQPConfig, queueName string) (*AMQPConsumer, erro
 		return nil, err
 	}
 	return &AMQPConsumer{
-		Queue:             queue,
-		Messages:          msgs,
-		ChannelForConsume: amqpCfg.ChannelForConsume,
+		Queue:    queue,
+		Messages: msgs,
 	}, nil
 }

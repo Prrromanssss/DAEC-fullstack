@@ -34,6 +34,9 @@ func main() {
 	}
 	defer file.Close()
 
+	go logcleaner.CleanLog(10*time.Minute, logPath, 100)
+
+	// Load env variables
 	godotenv.Load(fmt.Sprintf("%s/.env", filepath.Dir(rootPath)))
 
 	portString := os.Getenv("PORT")
@@ -43,7 +46,6 @@ func main() {
 	}
 
 	// Configuration database
-
 	dbURL := os.Getenv("DB_URL")
 
 	if dbURL == "" {
@@ -52,21 +54,21 @@ func main() {
 
 	dbCfg := config.NewDBConfig(dbURL)
 
-	go logcleaner.CleanLog(10*time.Minute, logPath, 100)
-
 	// Configuration RabbitMQ
-
-	rabbitMQURL := os.Getenv("RABBITMQ_URL")
+	rabbitMQURL := os.Getenv("RABBIT_MQ_URL")
 
 	if rabbitMQURL == "" {
 		log.Fatal("RABBITMQ_URL is not found in environment")
 	}
 
+	queueForSendToAgentsString := "Queue for sending expressions to agents"
+	queueForConsumeFromAgentsString := "Queue for consuming results and pings from agents"
+
 	agentAgregator := agent.NewAgentAgregator(
 		rabbitMQURL,
 		dbCfg,
-		"Queue for sending expressions to agents",
-		"Queue for consuming results and pings from agents",
+		queueForSendToAgentsString,
+		queueForConsumeFromAgentsString,
 	)
 
 	go agent.AgregateAgents(agentAgregator)
@@ -76,15 +78,14 @@ func main() {
 	}
 
 	// Create operation
-
 	config.ConfigOperation(dbCfg)
 
 	// Create Agent
 	agent1, err := agent.NewAgent(
 		rabbitMQURL,
 		dbCfg,
-		"Queue for sending expressions to agents",
-		"Queue for consuming results and pings from agents",
+		queueForSendToAgentsString,
+		queueForConsumeFromAgentsString,
 		5,
 	)
 	if err != nil {
@@ -94,7 +95,6 @@ func main() {
 	go agent.AgentService(agent1)
 
 	// Configuration http server
-
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -108,15 +108,17 @@ func main() {
 
 	v1Router := chi.NewRouter()
 
-	v1Router.Post("/expressions", handlers.MiddlewareAgentAgregatorAndDBConfig(handlers.HandlerCreateExpression, dbCfg, agentAgregator))
+	v1Router.Post("/expressions", handlers.MiddlewareAgentAgregatorAndDBConfig(
+		handlers.HandlerCreateExpression,
+		dbCfg,
+		agentAgregator,
+	))
 	v1Router.Get("/expressions", handlers.MiddlewareApiConfig(handlers.HandlerGetExpressions, dbCfg))
-	v1Router.Get("/expressions/{expressionID}", handlers.MiddlewareApiConfig(handlers.HandlerGetExpressionByID, dbCfg))
 
 	v1Router.Get("/operations", handlers.MiddlewareApiConfig(handlers.HandlerGetOperations, dbCfg))
 	v1Router.Put("/operations", handlers.MiddlewareApiConfig(handlers.HandlerUpdateOperation, dbCfg))
 
 	v1Router.Get("/agents", handlers.MiddlewareApiConfig(handlers.HandlerGetAgents, dbCfg))
-	v1Router.Get("/agents/{agentID}", handlers.MiddlewareApiConfig(handlers.HandlerGetAgentByID, dbCfg))
 
 	router.Mount("/v1", v1Router)
 
