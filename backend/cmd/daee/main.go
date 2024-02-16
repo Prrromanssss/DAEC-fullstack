@@ -64,12 +64,15 @@ func main() {
 	queueForSendToAgentsString := "Queue for sending expressions to agents"
 	queueForConsumeFromAgentsString := "Queue for consuming results and pings from agents"
 
-	agentAgregator := agent.NewAgentAgregator(
+	agentAgregator, err := agent.NewAgentAgregator(
 		rabbitMQURL,
 		dbCfg,
 		queueForSendToAgentsString,
 		queueForConsumeFromAgentsString,
 	)
+	if err != nil {
+		log.Fatalf("Agent Agregator Error: %v", err)
+	}
 
 	go agent.AgregateAgents(agentAgregator)
 
@@ -99,7 +102,7 @@ func main() {
 
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
@@ -116,7 +119,7 @@ func main() {
 	v1Router.Get("/expressions", handlers.MiddlewareApiConfig(handlers.HandlerGetExpressions, dbCfg))
 
 	v1Router.Get("/operations", handlers.MiddlewareApiConfig(handlers.HandlerGetOperations, dbCfg))
-	v1Router.Put("/operations", handlers.MiddlewareApiConfig(handlers.HandlerUpdateOperation, dbCfg))
+	v1Router.Patch("/operations", handlers.MiddlewareApiConfig(handlers.HandlerUpdateOperation, dbCfg))
 
 	v1Router.Get("/agents", handlers.MiddlewareApiConfig(handlers.HandlerGetAgents, dbCfg))
 
