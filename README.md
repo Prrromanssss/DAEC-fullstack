@@ -9,8 +9,8 @@
 ## About
 
 This project is transitional to the next sprint on the Yandex Lyceum course.
-This is distributed arithmetic expression evaluator
-
+This is distributed arithmetic expression evaluator, you can read about in directory docs
+in the root of the project.
 
 
 ## Deployment instructions
@@ -25,14 +25,16 @@ git clone https://github.com/Prrromanssss/DAEE-fullstack
 
 ### 2. Installing PostgreSQL
 If you have your database - skip this step(just write to .env db_url)
+From root directory run this commands(firstly download docker)
 ```commandline
 
 ```
 
 ### 3. Installing RabbitMQ
 
-From root directory run this command
+From root directory run this commands(firstly download docker)
 ```commandline
+make pull-rabbitmq
 make run-rabbitmq
 ```
 
