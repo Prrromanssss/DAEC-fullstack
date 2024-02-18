@@ -4,7 +4,8 @@ VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: GetExpressions :many
-SELECT * FROM expressions;
+SELECT * FROM expressions
+ORDER BY created_at DESC;
 
 -- name: GetExpressionByID :one
 SELECT * FROM expressions
@@ -29,3 +30,8 @@ WHERE id = $4;
 UPDATE expressions
 SET status = $1
 WHERE id = $2;
+
+-- name: GetComputingExpressions :many
+SELECT * FROM expressions
+WHERE status = 'computing'
+ORDER BY created_at DESC;

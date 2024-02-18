@@ -165,6 +165,17 @@ func (a *Agent) DecrementActiveComputers() error {
 		if err != nil {
 			return fmt.Errorf("can't update agent status: %v", err)
 		}
+	} else {
+		a.status = "running"
+		err := a.dbConfig.DB.UpdateAgentStatus(
+			context.Background(),
+			database.UpdateAgentStatusParams{
+				Status: "running",
+				ID:     a.agentID,
+			})
+		if err != nil {
+			return fmt.Errorf("can't update agent status: %v", err)
+		}
 	}
 	return nil
 }
@@ -256,8 +267,8 @@ func (a *Agent) ConsumeMessageFromComputers(result *ExpressionMessage) {
 	if err != nil {
 		err := a.Reconnect()
 		if err != nil {
-			a.kill <- struct{}{}
 			log.Printf("Agent Error: %v", err)
+			a.kill <- struct{}{}
 			return
 		}
 		err = a.PublishMessage(result)
@@ -285,9 +296,13 @@ func (a *Agent) ConsumeMessageFromAgentAgregator(msgFromAgentAgregator amqp.Deli
 		return
 	}
 
+	a.mu.Lock()
 	if a.number_of_active_calculations >= a.number_of_parallel_calculations {
+		msgFromAgentAgregator.Nack(false, true)
+		a.mu.Unlock()
 		return
 	}
+	a.mu.Unlock()
 
 	err := msgFromAgentAgregator.Ack(false)
 	if err != nil {
@@ -298,22 +313,22 @@ func (a *Agent) ConsumeMessageFromAgentAgregator(msgFromAgentAgregator amqp.Deli
 
 	err = a.MakeExpressionStatusComputing(&exprMsg)
 	if err != nil {
-		a.kill <- struct{}{}
 		log.Printf("Agent Error: %v", err)
+		a.kill <- struct{}{}
 		return
 	}
 
 	err = a.RunSimpleComputer(&exprMsg)
 	if err != nil {
-		a.kill <- struct{}{}
 		log.Printf("Agent Error: %v", err)
+		a.kill <- struct{}{}
 		return
 	}
 
 	err = a.ChangeAgentStatusToRunningOrSleeping()
 	if err != nil {
-		a.kill <- struct{}{}
 		log.Printf("Agent Error: %v", err)
+		a.kill <- struct{}{}
 		return
 	}
 }

@@ -65,6 +65,7 @@ func (q *Queries) GetAgentByID(ctx context.Context, id uuid.UUID) (Agent, error)
 
 const getAgents = `-- name: GetAgents :many
 SELECT id, number_of_parallel_calculations, last_ping, status, created_at FROM agents
+ORDER BY created_at DESC
 `
 
 func (q *Queries) GetAgents(ctx context.Context) ([]Agent, error) {

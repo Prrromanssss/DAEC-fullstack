@@ -12,6 +12,7 @@ import (
 	"github.com/Prrromanssss/DAEE-fullstack/handlers"
 	"github.com/Prrromanssss/DAEE-fullstack/pkg/agent"
 	"github.com/Prrromanssss/DAEE-fullstack/pkg/logcleaner"
+	"github.com/Prrromanssss/DAEE-fullstack/pkg/reload"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -77,9 +78,7 @@ func main() {
 
 	go agent.AgregateAgents(agentAgregator)
 
-	if err != nil {
-		log.Fatalf("Can't connect to RabbitMQ: %v", err)
-	}
+	reload.ReloadComputingExpressions(dbCfg, agentAgregator)
 
 	// Create operation
 	config.ConfigOperation(dbCfg)
@@ -90,7 +89,7 @@ func main() {
 		dbCfg,
 		queueForSendToAgentsString,
 		queueForConsumeFromAgentsString,
-		5,
+		2,
 	)
 	if err != nil {
 		log.Fatalf("Can't create agent: %v", err)

@@ -54,6 +54,7 @@ func (q *Queries) GetOperationTimeByType(ctx context.Context, operationType stri
 
 const getOperations = `-- name: GetOperations :many
 SELECT id, operation_type, execution_time FROM operations
+ORDER BY operation_type DESC
 `
 
 func (q *Queries) GetOperations(ctx context.Context) ([]Operation, error) {

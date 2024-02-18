@@ -50,6 +50,44 @@ func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionPara
 	return i, err
 }
 
+const getComputingExpressions = `-- name: GetComputingExpressions :many
+SELECT id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
+WHERE status = 'computing'
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetComputingExpressions(ctx context.Context) ([]Expression, error) {
+	rows, err := q.db.QueryContext(ctx, getComputingExpressions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Expression
+	for rows.Next() {
+		var i Expression
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Data,
+			&i.ParseData,
+			&i.Status,
+			&i.Result,
+			&i.IsReady,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getExpressionByID = `-- name: GetExpressionByID :one
 SELECT id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
 WHERE id = $1
@@ -73,6 +111,7 @@ func (q *Queries) GetExpressionByID(ctx context.Context, id uuid.UUID) (Expressi
 
 const getExpressions = `-- name: GetExpressions :many
 SELECT id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
+ORDER BY created_at DESC
 `
 
 func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {

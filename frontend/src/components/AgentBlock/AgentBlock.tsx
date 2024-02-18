@@ -24,7 +24,7 @@ export const AgentBlock = ({ agent }: AgentBlockProps) => {
         Number of parallel calculations: {agent.number_of_parallel_calculations}
       </p>
       <p className={styles.text}>
-        Дата создания: {createdAt}
+        Created at: {createdAt}
       </p>
     </div>
   )
