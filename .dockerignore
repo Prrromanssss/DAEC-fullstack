@@ -1,0 +1,24 @@
+# Ignore Go temporary files
+**/*.test
+**/*_test.go
+**/*_test
+
+# Ignore TypeScript temporary files
+**/*.js
+**/*.map
+**/*.d.ts
+
+# Ignore temporary files for npm и yarn
+node_modules/
+
+# Ignore dependencies files for go
+vendor/
+
+# Ignore files, created by VS Code
+.vscode
+
+# Ignore local temporary files
+.DS_Store
+
+# Ignore files for CI/CD
+.github

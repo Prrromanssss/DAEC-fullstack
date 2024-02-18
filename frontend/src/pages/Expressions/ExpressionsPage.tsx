@@ -5,6 +5,7 @@ import { Button } from "src/components/Button/Button";
 import { Input } from "src/components/Input/Input";
 import { createExpression, getExpressions } from "src/services/api";
 import { ExpressionBlock } from "src/components/ExpressionBlock/ExpressionBlock";
+import { toast } from 'react-toastify';
 
 export const ExpressionsPage = () => {
   const [expressions, setExpressions] = useState<Expression[]>([]);
@@ -13,8 +14,12 @@ export const ExpressionsPage = () => {
   const createHandler = () => {
     createExpression(newExpression)
       .then(() => {
+        toast.success("Success");
         getExpressions()
           .then(data => setExpressions(data));
+      })
+      .catch((err) => {
+        toast.error(err.response.data.error);
       })
       .finally(() => {
         setNewExpression("");

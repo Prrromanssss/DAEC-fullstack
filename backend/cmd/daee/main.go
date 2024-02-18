@@ -41,12 +41,6 @@ func main() {
 	// Load env variables
 	godotenv.Load(fmt.Sprintf("%s/.env", filepath.Dir(rootPath)))
 
-	portString := os.Getenv("PORT")
-
-	if portString == "" {
-		log.Fatal("PORT is not found in environment")
-	}
-
 	// Configuration database
 	dbURL := os.Getenv("DB_URL")
 
@@ -158,10 +152,10 @@ func main() {
 
 	srv := &http.Server{
 		Handler: router,
-		Addr:    ":" + portString,
+		Addr:    ":3000",
 	}
 
-	log.Printf("Server starting on port %v", portString)
+	log.Printf("Server starting on port %v", 3000)
 	err = srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
