@@ -26,6 +26,7 @@ type Agent struct {
 	number_of_parallel_calculations int
 	number_of_active_calculations   int
 	last_ping                       time.Time
+	inactiveTime                    int32
 	status                          string
 	amqpConfig                      *config.AMQPConfig
 	dbConfig                        *config.DBConfig
@@ -34,6 +35,7 @@ type Agent struct {
 	amqpConsumer                    *config.AMQPConsumer
 	mu                              *sync.Mutex
 	kill                            chan struct{}
+	allExpressions                  map[uuid.UUID]struct{}
 }
 
 func NewAgent(
@@ -42,6 +44,7 @@ func NewAgent(
 	titleForExpressionQueue,
 	titleForResultAndPingQueue string,
 	numberOfParallelCalculations int32,
+	inactiveTime int32,
 ) (*Agent, error) {
 	amqpCfg, err := config.NewAMQPConfig(rabbitMQURL)
 	if err != nil {
@@ -76,6 +79,7 @@ func NewAgent(
 		number_of_parallel_calculations: int(agent.NumberOfParallelCalculations),
 		number_of_active_calculations:   0,
 		last_ping:                       agent.LastPing,
+		inactiveTime:                    inactiveTime,
 		status:                          string(agent.Status),
 		amqpConfig:                      amqpCfg,
 		dbConfig:                        dbCfg,
@@ -84,6 +88,7 @@ func NewAgent(
 		amqpConsumer:                    amqpCons,
 		mu:                              &sync.Mutex{},
 		kill:                            make(chan struct{}),
+		allExpressions:                  make(map[uuid.UUID]struct{}),
 	}, nil
 }
 
@@ -91,23 +96,33 @@ func (a *Agent) Reconnect() error {
 	a.amqpConfig.ChannelForConsume.Close()
 	a.amqpConfig.ChannelForProduce.Close()
 	a.amqpConfig.Conn.Close()
+	var err error
+	a.amqpConfig, a.amqpProducer, a.amqpConsumer, err = a.ConnectToRabbitMQ()
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
+func (a *Agent) ConnectToRabbitMQ() (
+	*config.AMQPConfig,
+	*config.AMQPProducer,
+	*config.AMQPConsumer,
+	error,
+) {
 	amqpCfg, err := config.NewAMQPConfig(a.rabbitMQURL)
 	if err != nil {
-		return fmt.Errorf("can't create NewAMQPConfig: %v", err)
+		return nil, nil, nil, fmt.Errorf("can't create NewAMQPConfig: %v", err)
 	}
 	amqpProd, err := config.NewAMQPProducer(amqpCfg, a.titleForResultAndPingQueue)
 	if err != nil {
-		return fmt.Errorf("can't create NewAMQPProducer: %v", err)
+		return nil, nil, nil, fmt.Errorf("can't create NewAMQPProducer: %v", err)
 	}
 	amqpCons, err := config.NewAMQPConsumer(amqpCfg, a.titleForExpressionQueue)
 	if err != nil {
-		return fmt.Errorf("can't create NewAMQPConsumer: %v", err)
+		return nil, nil, nil, fmt.Errorf("can't create NewAMQPConsumer: %v", err)
 	}
-	a.amqpConfig = amqpCfg
-	a.amqpConsumer = amqpCons
-	a.amqpProducer = amqpProd
-	return nil
+	return amqpCfg, amqpProd, amqpCons, nil
 }
 
 func (a *Agent) PublishMessage(msg *ExpressionMessage) error {
@@ -245,20 +260,31 @@ func (a *Agent) RunSimpleComputer(exprMsg *ExpressionMessage) error {
 	return nil
 }
 
-func (a *Agent) MakeExpressionStatusComputing(exprMsg *ExpressionMessage) error {
+func (a *Agent) ChangeExpressionStatus(exprID uuid.UUID, newStatus string) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
 	err := a.dbConfig.DB.UpdateExpressionStatus(
 		context.Background(),
 		database.UpdateExpressionStatusParams{
-			ID:     exprMsg.ExpressionID,
-			Status: "computing",
+			ID:     exprID,
+			Status: database.ExpressionStatus(newStatus),
 		})
 	if err != nil {
 		return fmt.Errorf("can't update expression status: %v", err)
 	}
 	return nil
+}
+
+func (a *Agent) MakeExpressionsTerminated() {
+	log.Println(a.allExpressions)
+
+	for exprID := range a.allExpressions {
+		err := a.ChangeExpressionStatus(exprID, "terminated")
+		if err != nil {
+			log.Printf("Can't make expressions terminated 'cause agent is down: %v", err)
+		}
+	}
 }
 
 func (a *Agent) ConsumeMessageFromComputers(result *ExpressionMessage) {
@@ -278,6 +304,10 @@ func (a *Agent) ConsumeMessageFromComputers(result *ExpressionMessage) {
 			return
 		}
 	}
+
+	a.mu.Lock()
+	delete(a.allExpressions, result.ExpressionID)
+	a.mu.Unlock()
 
 	err = a.DecrementActiveComputers()
 	if err != nil {
@@ -311,12 +341,16 @@ func (a *Agent) ConsumeMessageFromAgentAgregator(msgFromAgentAgregator amqp.Deli
 		return
 	}
 
-	err = a.MakeExpressionStatusComputing(&exprMsg)
+	err = a.ChangeExpressionStatus(exprMsg.ExpressionID, "computing")
 	if err != nil {
 		log.Printf("Agent Error: %v", err)
 		a.kill <- struct{}{}
 		return
 	}
+
+	a.mu.Lock()
+	a.allExpressions[exprMsg.ExpressionID] = struct{}{}
+	a.mu.Unlock()
 
 	err = a.RunSimpleComputer(&exprMsg)
 	if err != nil {
@@ -337,12 +371,16 @@ func AgentService(agent *Agent) {
 	defer agent.amqpConfig.Conn.Close()
 	defer agent.amqpConfig.ChannelForConsume.Close()
 	defer agent.amqpConfig.ChannelForProduce.Close()
+	defer agent.MakeExpressionsTerminated()
 
 	go func() {
 		for msgFromAgentAgregator := range agent.amqpConsumer.Messages {
 			go agent.ConsumeMessageFromAgentAgregator(msgFromAgentAgregator)
 		}
 	}()
+
+	ticker := time.NewTicker(time.Duration(agent.inactiveTime) * time.Second)
+	defer ticker.Stop()
 
 	for {
 		select {
@@ -354,6 +392,12 @@ func AgentService(agent *Agent) {
 				log.Printf("Agent Error: %v", err)
 			}
 			return
+		case <-ticker.C:
+			exprMsg := ExpressionMessage{
+				IsPing:  true,
+				AgentID: agent.agentID,
+			}
+			agent.PublishMessage(&exprMsg)
 		}
 	}
 }

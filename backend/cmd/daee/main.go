@@ -83,19 +83,50 @@ func main() {
 	// Create operation
 	config.ConfigOperation(dbCfg)
 
-	// Create Agent
+	// Create Agent1
 	agent1, err := agent.NewAgent(
 		rabbitMQURL,
 		dbCfg,
 		queueForSendToAgentsString,
 		queueForConsumeFromAgentsString,
-		2,
+		1,
+		30,
 	)
 	if err != nil {
-		log.Fatalf("Can't create agent: %v", err)
+		log.Fatalf("Can't create agent1: %v", err)
 	}
 
 	go agent.AgentService(agent1)
+
+	// Create Agent2
+	agent2, err := agent.NewAgent(
+		rabbitMQURL,
+		dbCfg,
+		queueForSendToAgentsString,
+		queueForConsumeFromAgentsString,
+		1,
+		30,
+	)
+	if err != nil {
+		log.Fatalf("Can't create agent2: %v", err)
+	}
+
+	go agent.AgentService(agent2)
+
+	// Create Agent3
+	agent3, err := agent.NewAgent(
+		rabbitMQURL,
+		dbCfg,
+		queueForSendToAgentsString,
+		queueForConsumeFromAgentsString,
+		1,
+		30,
+	)
+	if err != nil {
+		log.Fatalf("Can't create agent2: %v", err)
+	}
+
+	go agent.AgentService(agent3)
 
 	// Configuration http server
 	router := chi.NewRouter()
