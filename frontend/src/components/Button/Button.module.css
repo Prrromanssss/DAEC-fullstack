@@ -1,11 +1,13 @@
 .btn {
   background: blueviolet;
   color: white;
-  padding: 15px 20px;
   border-radius: 10px;
   border: none;
   outline: none;
   cursor: pointer;
+  height: 84px;
+  width: 120px;
+  font-size: 25px;
 }
 
 .btn:hover {
