@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"Prrromanssss/DAEE/config"
 	"net/http"
+
+	"github.com/Prrromanssss/DAEE-fullstack/config"
 )
 
 type dbConfigHandler func(http.ResponseWriter, *http.Request, *config.DBConfig)

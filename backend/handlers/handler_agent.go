@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"Prrromanssss/DAEE/config"
-	"Prrromanssss/DAEE/internal/database"
 	"fmt"
 	"net/http"
+
+	"github.com/Prrromanssss/DAEE-fullstack/config"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/database"
 )
 
 func HandlerGetAgents(w http.ResponseWriter, r *http.Request, dbCfg *config.DBConfig) {

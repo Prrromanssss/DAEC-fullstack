@@ -1,8 +1,6 @@
 package agent
 
 import (
-	"Prrromanssss/DAEE/config"
-	"Prrromanssss/DAEE/internal/database"
 	"context"
 	"encoding/json"
 	"errors"
@@ -12,6 +10,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Prrromanssss/DAEE-fullstack/config"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/database"
 
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"

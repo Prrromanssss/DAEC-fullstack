@@ -1,9 +1,6 @@
 package agent
 
 import (
-	"Prrromanssss/DAEE/config"
-	"Prrromanssss/DAEE/internal/database"
-	"Prrromanssss/DAEE/pkg/orchestrator"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,6 +8,10 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/Prrromanssss/DAEE-fullstack/config"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/database"
+	"github.com/Prrromanssss/DAEE-fullstack/pkg/orchestrator"
 
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"

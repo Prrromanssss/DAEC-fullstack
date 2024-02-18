@@ -1,9 +1,10 @@
 package config
 
 import (
-	"Prrromanssss/DAEE/internal/database"
 	"database/sql"
 	"log"
+
+	"github.com/Prrromanssss/DAEE-fullstack/internal/database"
 
 	_ "github.com/lib/pq"
 )

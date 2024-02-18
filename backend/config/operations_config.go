@@ -1,9 +1,10 @@
 package config
 
 import (
-	"Prrromanssss/DAEE/internal/database"
 	"context"
 	"log"
+
+	"github.com/Prrromanssss/DAEE-fullstack/internal/database"
 
 	"github.com/google/uuid"
 )

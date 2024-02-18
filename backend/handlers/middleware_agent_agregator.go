@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"Prrromanssss/DAEE/config"
-	"Prrromanssss/DAEE/pkg/agent"
 	"net/http"
+
+	"github.com/Prrromanssss/DAEE-fullstack/config"
+	"github.com/Prrromanssss/DAEE-fullstack/pkg/agent"
 )
 
 type agentAgregatorAndDBConfigHandler func(http.ResponseWriter, *http.Request, *config.DBConfig, *agent.AgentAgregator)

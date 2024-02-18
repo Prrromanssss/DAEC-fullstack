@@ -1,4 +1,4 @@
-module Prrromanssss/DAEE
+module github.com/Prrromanssss/DAEE-fullstack
 
 go 1.21.1
 

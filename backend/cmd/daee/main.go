@@ -1,16 +1,17 @@
 package main
 
 import (
-	"Prrromanssss/DAEE/config"
-	"Prrromanssss/DAEE/handlers"
-	"Prrromanssss/DAEE/pkg/agent"
-	"Prrromanssss/DAEE/pkg/logcleaner"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/Prrromanssss/DAEE-fullstack/config"
+	"github.com/Prrromanssss/DAEE-fullstack/handlers"
+	"github.com/Prrromanssss/DAEE-fullstack/pkg/agent"
+	"github.com/Prrromanssss/DAEE-fullstack/pkg/logcleaner"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"

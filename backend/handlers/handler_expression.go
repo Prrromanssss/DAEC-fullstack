@@ -1,15 +1,16 @@
 package handlers
 
 import (
-	"Prrromanssss/DAEE/config"
-	"Prrromanssss/DAEE/internal/database"
-	"Prrromanssss/DAEE/pkg/agent"
-	"Prrromanssss/DAEE/pkg/orchestrator"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/Prrromanssss/DAEE-fullstack/config"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/database"
+	"github.com/Prrromanssss/DAEE-fullstack/pkg/agent"
+	"github.com/Prrromanssss/DAEE-fullstack/pkg/orchestrator"
 
 	"github.com/google/uuid"
 )
