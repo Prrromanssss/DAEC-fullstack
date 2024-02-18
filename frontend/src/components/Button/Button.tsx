@@ -1,5 +1,5 @@
-import { ButtonProps } from "../../ts/interfaces";
 import styles from "./Button.module.css";
+import { ButtonProps } from "src/ts/interfaces";
 
 export const Button = ({ title, onClick, disabled }: ButtonProps) => {
   return (

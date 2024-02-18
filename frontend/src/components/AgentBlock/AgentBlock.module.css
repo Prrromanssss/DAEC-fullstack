@@ -1,4 +1,4 @@
-.expressionBlock {
+.agentBlock {
   border: 1px solid blueviolet;
   width: fit-content;
   padding: 10px;
@@ -21,7 +21,7 @@
   gap: 10px;
 }
 
-.createdAt {
+.text {
   margin: 0;
   margin-top: 10px;
   font-size: 20px;

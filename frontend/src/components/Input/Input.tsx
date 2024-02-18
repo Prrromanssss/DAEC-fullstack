@@ -1,5 +1,5 @@
 import styles from "./Input.module.css";
-import { InputProps } from "../../ts/interfaces";
+import { InputProps } from "src/ts/interfaces";
 
 export const Input = ({ value, onChange, type, placeholder }: InputProps) => {
   return (

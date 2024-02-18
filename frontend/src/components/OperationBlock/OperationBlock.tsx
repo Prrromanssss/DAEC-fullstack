@@ -1,5 +1,5 @@
 import styles from "./OperationBlock.module.css";
-import { OperationBlockProps } from "../../ts/interfaces"
+import { OperationBlockProps } from "src/ts/interfaces"
 import { useState } from "react";
 import { Button } from "../Button/Button";
 import { Input } from "../Input/Input";

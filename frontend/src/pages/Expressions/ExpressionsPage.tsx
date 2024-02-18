@@ -1,25 +1,29 @@
 import styles from "./ExpressionsPage.module.css";
 import { useEffect, useState } from "react";
-import { Expression } from "../../ts/interfaces";
-import { Button } from "../../components/Button/Button";
-import { Input } from "../../components/Input/Input";
-import { createExpression, getExpressions } from "../../services/api";
-import { ExpressionBlock } from "../../components/ExpressionBlock/ExpressionBlock";
+import { Expression } from "src/ts/interfaces";
+import { Button } from "src/components/Button/Button";
+import { Input } from "src/components/Input/Input";
+import { createExpression, getExpressions } from "src/services/api";
+import { ExpressionBlock } from "src/components/ExpressionBlock/ExpressionBlock";
 
 export const ExpressionsPage = () => {
   const [expressions, setExpressions] = useState<Expression[]>([]);
   const [newExpression, setNewExpression] = useState<string>("");
 
   const createHandler = () => {
-    createExpression(newExpression).then(() => {
-      getExpressions().then(data => setExpressions(data));
-    }).finally(() => {
-      setNewExpression("");
-    });
+    createExpression(newExpression)
+      .then(() => {
+        getExpressions()
+          .then(data => setExpressions(data));
+      })
+      .finally(() => {
+        setNewExpression("");
+      });
   };
 
   useEffect(() => {
-    getExpressions().then(data => setExpressions(data));
+    getExpressions()
+      .then(data => setExpressions(data));
   }, []);
 
   return (
@@ -37,7 +41,12 @@ export const ExpressionsPage = () => {
         />
       </div>
       <div className={styles.items}>
-        {expressions.map(expression => <ExpressionBlock key={expression.id} expression={expression} />)}
+        {expressions.map(expression => (
+          <ExpressionBlock
+            key={expression.id}
+            expression={expression}
+          />
+        ))}
       </div>
     </div>
   )

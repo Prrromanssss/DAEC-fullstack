@@ -1,5 +1,5 @@
 import axios from "axios"
-import { Agent, Expression, Operation } from "../ts/interfaces";
+import { Agent, Expression, Operation } from "src/ts/interfaces";
 
 axios.defaults.baseURL = "http://localhost:3000/v1";
 
@@ -19,10 +19,8 @@ export const getOperations = async (): Promise<Operation[]> => {
 }
 
 export const updateOperation = async (operation: Operation): Promise<Operation> => {
-  const { data } = await axios.patch(
-    "/operations",
-    { operation_type: operation.operation_type, execution_time: operation.execution_time },
-  );
+  const { operation_type, execution_time } = operation;
+  const { data } = await axios.patch("/operations", { operation_type, execution_time });
   return data;
 }
 
