@@ -155,6 +155,10 @@ But that's not all, inside each expression we process subexpressions with differ
 
 If the HTTP-server server crashed and we have expressions that did not have time to be calculated, by rebooting the server we will return to their calculations
 
+## Some expressions to test
+1. 4 + -2 + 5 * 6
+2. 2 + 2 + 2 + 2
+3. 2 + 2 * 4 + 3 - 4 + 5
 
 ## Schema
 ![Schema of the project](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/images/schema.png)
