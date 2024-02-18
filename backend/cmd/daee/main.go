@@ -83,8 +83,8 @@ func main() {
 		dbCfg,
 		queueForSendToAgentsString,
 		queueForConsumeFromAgentsString,
-		1,
-		30,
+		5,
+		200,
 	)
 	if err != nil {
 		log.Fatalf("Can't create agent1: %v", err)
@@ -98,8 +98,8 @@ func main() {
 		dbCfg,
 		queueForSendToAgentsString,
 		queueForConsumeFromAgentsString,
-		1,
-		30,
+		5,
+		200,
 	)
 	if err != nil {
 		log.Fatalf("Can't create agent2: %v", err)
@@ -113,8 +113,8 @@ func main() {
 		dbCfg,
 		queueForSendToAgentsString,
 		queueForConsumeFromAgentsString,
-		1,
-		30,
+		5,
+		200,
 	)
 	if err != nil {
 		log.Fatalf("Can't create agent2: %v", err)
