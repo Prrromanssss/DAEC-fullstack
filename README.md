@@ -100,8 +100,10 @@ Therefore, when a user sends an expression, he receives an expression identifier
 
 **How to use it?**
 
-/expressions - You can follow write some expression to calculate
+/expressions - You can write some expressions to calculate
+
 /operations - You can change the execution time of each operation
+
 /agents - You can see how many servers can currently process expressions
 
 **How does it work?**
