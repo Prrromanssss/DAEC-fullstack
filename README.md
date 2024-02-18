@@ -138,6 +138,8 @@ And now we can run parallel 2 2 + and 2 2 + and then just add up their results
 We have N expressions, every expression is processed by some agent
 But that's not all, inside each expression we process subexpressions with different agents
 
+If the HTTP-server server crashed and we have expressions that did not have time to be calculated, by rebooting the server we will return to their calculations
+
 
 ## Schema
 ![Schema of the project](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/images/schema.png)
