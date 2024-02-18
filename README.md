@@ -139,7 +139,7 @@ But what about
 
 I think it is so slow, 'cause we need to solve 2 2 +, then 4 2 +, then 6 2 +
 
-SO, i parses it to RPN differently
+SO, I parses it to RPN differently
 
 I just add some brackets to expression
 
