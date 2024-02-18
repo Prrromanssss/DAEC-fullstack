@@ -98,7 +98,7 @@ Moreover: the calculation of each such operation in our â€œalternative realityâ€
 Therefore, when a user sends an expression, he receives an expression identifier in response and can, at some periodicity, check with the server whether the expression has been counted? If the expression is finally evaluated, he will get the result. Remember that some parts of an arphimetic expression can be evaluated in parallel.
 
 
-**How to use it**
+**How to use it?**
 
 /expressions - You can follow write some expression to calculate
 /operations - You can change the execution time of each operation
