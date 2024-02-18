@@ -124,6 +124,7 @@ breaks it into tokens and writes it to the RabbitMQ queue for processing by agen
 
 
 **What about parallelism?**
+
 Some example:
 I uses reverse Polish notation
 2 + 2 --parse--> 2 2 +
