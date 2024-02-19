@@ -136,28 +136,28 @@ I uses reverse Polish notation
 
 2 + 2 --parse--> 2 2 +
 
-And we can give 2 2 + to some goroutine to run
+And we can give 2 2 + to some goroutine to calculate.
 
-But what about
+But what about this example?
 
 2 + 2 + 2 + 2 --parse--> 2 2 + 2 + 2 +
 
-I think it is so slow, 'cause we need to solve 2 2 +, then 4 2 +, then 6 2 +
+I think it's slow, because we need to solve 2 2 +, then 4 2 +, then 6 2 +
 
-SO, I parses it to RPN differently
+SO, I parses it to RPN differently.
 
-I just add some brackets to expression
+I just add some brackets to expression.
 
 2 + 2 + 2 + 2 --add-brackets--> (2 + 2) + (2 + 2) --parse--> 2 2 + 2 2 + +
 
-And now we can run parallel 2 2 + and 2 2 + and then just add up their results
+And now we can run parallel 2 2 + and 2 2 + and then just add up their results.
 
 We have N expressions, every expression is processed by some agent. 
-But that's not all, inside each expression we process subexpressions with different agents
+But that's not all, inside each expression we process subexpressions with different agents.
 
-If the HTTP-server server crashed and we have expressions that did not have time to be calculated, by rebooting the server we will return to their calculations
+If the HTTP-server crashed and we have expressions that did not have time to be calculated, by rebooting the server we will return to their calculations.
 
-## Some expressions to test
+## Some expressions to testing site
 1. 4 + -2 + 5 * 6
 2. 2 + 2 + 2 + 2
 3. 2 + 2 * 4 + 3 - 4 + 5
