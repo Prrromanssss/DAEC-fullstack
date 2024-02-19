@@ -123,7 +123,7 @@ breaks it into tokens and writes it to the RabbitMQ queue for processing by agen
 
 *Agent*:
 1. Consumes expressions from the Agent Agregator and gives it to its goroutines for calculations.
-2. Consumes results from each goroutines and sends it to Agent Agregator
+2. Consumes results from each goroutine and sends it to Agent Agregator
 3. Sends pings to Agent Agregator
 4. Every agent have 5 goroutines
 5. There are 3 agents
