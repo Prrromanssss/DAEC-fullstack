@@ -31,6 +31,7 @@ make run-rabbitmq
 ### 4. Generate file with virtual environment variables (.env) in root directory
 
 Generate file '.env' in root directory with the structure presented in the .env.example file
+
 If you didn't skip 2 and 3 just write
 ```text
 DB_URL=postgres://postgres:postgres@localhost:5432/daee?sslmode=disable
@@ -42,7 +43,7 @@ RABBIT_MQ_URL=amqp://guest:guest@localhost:5672/
 From root directory run this command
 ```commandline
 cd backend
-go mod downoload
+go mod download
 ```
 
 ### 6. Installing goose for migrations
