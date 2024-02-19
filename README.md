@@ -1,4 +1,4 @@
-# DAEE-backend
+# DAEE-fullstack
 
 ![Main page](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/images/expressions.png)
 ![Agents](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/images/agents.png)
