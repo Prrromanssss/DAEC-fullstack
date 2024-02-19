@@ -96,7 +96,7 @@ This is distributed arithmetic expression evaluator.
 
 The user wants to calculate arithmetic expressions. He enters the code 2 + 2 * 2 and wants to get the answer 6. But our addition and multiplication (also subtraction) operations take a “very, very” long time. Therefore, the option in which the user makes an http request and receives the result as a response is impossible.
 Moreover: the calculation of each such operation in our “alternative reality” takes “giant” computing power. Accordingly, we must be able to perform each action separately and we can scale this system by adding computing power to our system in the form of new “machines”.
-Therefore, when a user sends an expression, he receives an expression identifier in response and can, at some periodicity, check with the server whether the expression has been counted? If the expression is finally evaluated, he will get the result. Remember that some parts of an arphimetic expression can be evaluated in parallel.
+Therefore, when a user sends an expression, he receives an expression identifier in response and can, at some periodicity, check with the server whether the expression has been counted? If the expression is finally evaluated, he will get the result. Remember that some parts of an arithmetic expression can be evaluated in parallel.
 
 
 **How to use it?**
