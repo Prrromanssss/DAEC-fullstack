@@ -124,8 +124,9 @@ breaks it into tokens and writes it to the RabbitMQ queue for processing by agen
 *Agent*:
 1. Consumes expressions from the Agent Agregator and gives it to its goroutines for calculations.
 2. Consumes results from each goroutines and sends it to Agent Agregator
-3. Every agent have 5 goroutines
-4. There are 3 agents
+3. Sends pings to Agent Agregator
+4. Every agent have 5 goroutines
+5. There are 3 agents
 
 **What about parallelism?**
 
