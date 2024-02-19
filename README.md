@@ -118,7 +118,7 @@ Therefore, when a user sends an expression, he receives an expression identifier
 *Agent Agregator*:
 1. Consumes expressions from the orchestrator, 
 breaks it into tokens and writes it to the RabbitMQ queue for processing by agents
-2. Consumes results from agents, insert them to expression and send new tokens to agents to calculate
+2. Consumes results from agents, insert them to the expressions and sends new tokens to agents to calculate
 3. Consumes pings from agents, **BUT** I didn’t have time to create any mechanism that would check the pings of each server and if there had been no ping for a long time, kill it. (Ping every 200 seconds)
 
 *Agent*:
