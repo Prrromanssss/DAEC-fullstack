@@ -22,7 +22,7 @@ make run-postgres
 ```
 
 ### 3. Installing RabbitMQ
-If you have your database - skip this step(just write to .env RABBIT_MQ_URL)
+If you have your rabbitMQ - skip this step(just write to .env RABBIT_MQ_URL)
 From root directory run this commands(firstly download docker)
 ```commandline
 make pull-rabbitmq
