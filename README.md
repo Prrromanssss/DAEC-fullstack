@@ -51,7 +51,7 @@ go mod download
 
 From backend directory run this command
 ```commandline
-go get -u github.com/pressly/goose/cmd/goose
+go install github.com/pressly/goose/cmd/goose@latest
 ```
 
 ### 7. Make migrations
