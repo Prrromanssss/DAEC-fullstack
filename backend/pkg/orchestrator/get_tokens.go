@@ -26,7 +26,6 @@ func GetTokens(parseExpression string) []string {
 }
 
 func InsertResultToToken(parseExpression, token string, result int) (string, string, error) {
-	log.Println(parseExpression, "...", token, "...", result)
 	ind := 0
 	tokens := strings.Split(parseExpression, " ")
 	res := make([]string, 0)
