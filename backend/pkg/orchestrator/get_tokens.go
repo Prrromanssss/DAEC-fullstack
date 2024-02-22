@@ -26,6 +26,7 @@ func GetTokens(parseExpression string) []string {
 }
 
 func InsertResultToToken(parseExpression, token string, result int) (string, string, error) {
+	log.Println(parseExpression, "...", token, "...", result)
 	ind := 0
 	tokens := strings.Split(parseExpression, " ")
 	res := make([]string, 0)
@@ -54,7 +55,8 @@ func InsertResultToToken(parseExpression, token string, result int) (string, str
 				!IsNumber(string(tokens[ind+4])) {
 				newToken = fmt.Sprint(result, " ", tokens[ind+3], " ", tokens[ind+4])
 			}
-			ind += 2
+			ind += 3
+			break
 		} else {
 			res = append(res, tokens[ind])
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -76,6 +77,8 @@ func main() {
 
 	// Create operation
 	config.ConfigOperation(dbCfg)
+
+	dbCfg.DB.DeleteAgents(context.Background())
 
 	// Create Agent1
 	agent1, err := agent.NewAgent(

@@ -20,3 +20,6 @@ WHERE id = $2;
 UPDATE agents
 SET status = $1
 WHERE id = $2;
+
+-- name: DeleteAgents :exec
+DELETE FROM agents;
