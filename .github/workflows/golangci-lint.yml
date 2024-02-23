@@ -5,6 +5,8 @@ on:
       - master
       - main
   pull_request:
+      - master
+      - main
 
 permissions:
   contents: read
