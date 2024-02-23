@@ -45,11 +45,7 @@ type OperationTransformed struct {
 }
 
 func DatabaseOperationToOperation(dbOper Operation) OperationTransformed {
-	return OperationTransformed{
-		ID:            dbOper.ID,
-		OperationType: dbOper.OperationType,
-		ExecutionTime: dbOper.ExecutionTime,
-	}
+	return OperationTransformed(dbOper)
 }
 
 func DatabaseOperationsToOperations(dbOpers []Operation) []OperationTransformed {
@@ -69,13 +65,7 @@ type AgentTransformed struct {
 }
 
 func DatabaseAgentToAgent(dbAgent Agent) AgentTransformed {
-	return AgentTransformed{
-		ID:                           dbAgent.ID,
-		NumberOfParallelCalculations: dbAgent.NumberOfParallelCalculations,
-		LastPing:                     dbAgent.LastPing,
-		Status:                       dbAgent.Status,
-		CreatedAt:                    dbAgent.CreatedAt,
-	}
+	return AgentTransformed(dbAgent)
 }
 
 func DatabaseAgentsToAgents(dbAgents []Agent) []AgentTransformed {

@@ -40,7 +40,10 @@ func main() {
 	go logcleaner.CleanLog(10*time.Minute, logPath, 100)
 
 	// Load env variables
-	godotenv.Load(fmt.Sprintf("%s/.env", filepath.Dir(rootPath)))
+	err = godotenv.Load(fmt.Sprintf("%s/.env", filepath.Dir(rootPath)))
+	if err != nil {
+		log.Fatalf("Can't load env variables: %v", err)
+	}
 
 	// Configuration database
 	dbURL := os.Getenv("DB_URL")
@@ -73,12 +76,20 @@ func main() {
 
 	go agent.AgregateAgents(agentAgregator)
 
-	reload.ReloadComputingExpressions(dbCfg, agentAgregator)
+	// Reload computing expressions
+	err = reload.ReloadComputingExpressions(dbCfg, agentAgregator)
+	if err != nil {
+		log.Fatalf("Can't reload computin expressions: %v", err)
+	}
 
 	// Create operation
 	config.ConfigOperation(dbCfg)
 
-	dbCfg.DB.DeleteAgents(context.Background())
+	// Delete previous agents
+	err = dbCfg.DB.DeleteAgents(context.Background())
+	if err != nil {
+		log.Fatalf("Can't delete previous agents: %v", err)
+	}
 
 	// Create Agent1
 	agent1, err := agent.NewAgent(

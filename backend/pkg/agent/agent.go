@@ -328,7 +328,13 @@ func (a *Agent) ConsumeMessageFromAgentAgregator(msgFromAgentAgregator amqp.Deli
 
 	a.mu.Lock()
 	if a.number_of_active_calculations >= a.number_of_parallel_calculations {
-		msgFromAgentAgregator.Nack(false, true)
+		err := msgFromAgentAgregator.Nack(false, true)
+		if err != nil {
+			log.Printf("Agent Error: %v", err)
+			a.kill <- struct{}{}
+			a.mu.Unlock()
+			return
+		}
 		a.mu.Unlock()
 		return
 	}
@@ -397,7 +403,10 @@ func AgentService(agent *Agent) {
 				IsPing:  true,
 				AgentID: agent.agentID,
 			}
-			agent.PublishMessage(&exprMsg)
+			err := agent.PublishMessage(&exprMsg)
+			if err != nil {
+				log.Printf("Agent Error: Can't send ping: %v", err)
+			}
 		}
 	}
 }
