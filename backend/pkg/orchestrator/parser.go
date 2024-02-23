@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"errors"
+	"log"
 	"strconv"
 	"strings"
 	"unicode"
@@ -37,7 +38,7 @@ func isValidExpression(expression string) bool {
 		case '(':
 			stack = append(stack, char)
 		case ')':
-			if len(stack) == 0 || stack[len(stack)-1] != '(' {
+			if len(stack) == 0 || stack[len(stack)-1] != '(' || (i > 0 && expression[i-1] == '(') {
 				return false
 			}
 			stack = stack[:len(stack)-1]
@@ -46,6 +47,9 @@ func isValidExpression(expression string) bool {
 				return false
 			}
 			if contains([]rune{'+', '-', '*', '/', '(', ' '}, rune(expression[i-1])) {
+				return false
+			}
+			if i+1 < len(expression) && expression[i+1] == '0' {
 				return false
 			}
 		case '-', '+':
@@ -69,7 +73,7 @@ func isValidExpression(expression string) bool {
 
 func addZeroToUnaryPlusAndMinus(expression string) string {
 	var result strings.Builder
-
+	log.Println(expression)
 	length := len(expression)
 	ind := 0
 	for ind < length {
@@ -93,6 +97,7 @@ func addZeroToUnaryPlusAndMinus(expression string) string {
 			result.WriteRune(rune(expression[ind]))
 		}
 		ind++
+		log.Println(result.String())
 	}
 	return result.String()
 }
