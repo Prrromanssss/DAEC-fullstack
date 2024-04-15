@@ -45,6 +45,7 @@ func main() {
 	dbCfg := storage.NewStorage(cfg.StorageURL)
 
 	agentAgregator, err := agent.NewAgentAgregator(
+		log,
 		cfg.RabbitMQURL,
 		dbCfg,
 		cfg.QueueForSendToAgents,
@@ -70,6 +71,7 @@ func main() {
 
 	// Create Agent1
 	agent1, err := agent.NewAgent(
+		log,
 		cfg.RabbitMQURL,
 		dbCfg,
 		cfg.QueueForSendToAgents,
@@ -85,6 +87,7 @@ func main() {
 
 	// Create Agent2
 	agent2, err := agent.NewAgent(
+		log,
 		cfg.RabbitMQURL,
 		dbCfg,
 		cfg.QueueForSendToAgents,
@@ -100,6 +103,7 @@ func main() {
 
 	// Create Agent3
 	agent3, err := agent.NewAgent(
+		log,
 		cfg.RabbitMQURL,
 		dbCfg,
 		cfg.QueueForSendToAgents,

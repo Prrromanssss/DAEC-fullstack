@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
+	"os"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator/parser"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/rabbitmq"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
@@ -18,6 +20,7 @@ import (
 )
 
 type AgentAgregator struct {
+	log          *slog.Logger
 	amqpConfig   *rabbitmq.AMQPConfig
 	dbConfig     *storage.Storage
 	tasks        chan MessageFromOrchestrator
@@ -41,6 +44,7 @@ type ExpressionMessage struct {
 }
 
 func NewAgentAgregator(
+	log *slog.Logger,
 	rabbitMQURL string,
 	dbCfg *storage.Storage,
 	titleForExpressionQueue,
@@ -97,7 +101,7 @@ func (aa *AgentAgregator) PublishMessage(expressionID int32, token, expresssion 
 	if err != nil {
 		return fmt.Errorf("can't publish message to %s queue: %v", aa.amqpProducer.Queue.Name, err)
 	}
-	log.Printf("Publishing message to Queue: %s from Agent Agregator", aa.amqpProducer.Queue.Name)
+	aa.log.Info("publishing message to Queue from Agent Agregator", slog.String("queue", aa.amqpProducer.Queue.Name))
 	return nil
 }
 
@@ -171,25 +175,29 @@ func (aa *AgentAgregator) UpdateExpressionToReady(result int, exprID int32) erro
 }
 
 func (aa *AgentAgregator) ConsumeMessagesFromAgents(msgFromAgents amqp.Delivery) {
-	log.Println("Agent agregator consume message from agent", msgFromAgents.Body)
+	aa.log.Info("agent agregator consume message from agent", slog.String("msg", string(msgFromAgents.Body)))
 	err := msgFromAgents.Ack(false)
 	if err != nil {
-		log.Fatalf("Error acknowledging message: %v", err)
+		aa.log.Error("error acknowledging message", sl.Err(err))
+		os.Exit(1)
 	}
 	var exprMsg ExpressionMessage
 	if err := json.Unmarshal(msgFromAgents.Body, &exprMsg); err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
+		aa.log.Error("failed to parse JSON", sl.Err(err))
+		os.Exit(1)
 	}
 
 	if exprMsg.IsPing {
 		err := aa.HandlePing(exprMsg.AgentID)
 		if err != nil {
-			log.Fatalf("Agent Agregator Error: %v", err)
+			aa.log.Error("agent agregator error", sl.Err(err))
+			os.Exit(1)
 		}
 	} else {
 		newExpr, newToken, err := aa.UpdateExpressionFromAgents(exprMsg)
 		if err != nil {
-			log.Fatalf("Agent Agregator Error: %v", err)
+			aa.log.Error("agent agregator error", sl.Err(err))
+			os.Exit(1)
 		}
 
 		result, err := strconv.Atoi(newExpr)
@@ -199,7 +207,8 @@ func (aa *AgentAgregator) ConsumeMessagesFromAgents(msgFromAgents amqp.Delivery)
 			(newExpr[0] == '-' && parser.IsNumber(newExpr[1:])) {
 			err := aa.UpdateExpressionToReady(result, exprMsg.ExpressionID)
 			if err != nil {
-				log.Fatalf("Agent Agregator Error: %v", err)
+				aa.log.Error("agent agregator error:", sl.Err(err))
+				os.Exit(1)
 			}
 			return
 		}
@@ -207,19 +216,21 @@ func (aa *AgentAgregator) ConsumeMessagesFromAgents(msgFromAgents amqp.Delivery)
 		if newToken != "" {
 			err := aa.PublishMessage(exprMsg.ExpressionID, newToken, newExpr)
 			if err != nil {
-				log.Fatalf("Agent Agregator Error: %v", err)
+				aa.log.Error("agent agregator error", sl.Err(err))
+				os.Exit(1)
 			}
 		}
 	}
 }
 
 func (aa *AgentAgregator) ConsumeMessagesFromOrchestrator(expressionMessage MessageFromOrchestrator) {
-	log.Println("Agent agregator consume message from orchestrator")
+	aa.log.Info("agent agregator consume message from orchestrator")
 	tokens := parser.GetTokens(expressionMessage.Expression)
 	for _, token := range tokens {
 		err := aa.PublishMessage(expressionMessage.ExpressionID, token, expressionMessage.Expression)
 		if err != nil {
-			log.Fatalf("Agent Agregator Error: %v", err)
+			aa.log.Error("agent agregator error", sl.Err(err))
+			os.Exit(1)
 		}
 	}
 }

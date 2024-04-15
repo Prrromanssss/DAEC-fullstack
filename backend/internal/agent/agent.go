@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/rabbitmq"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
@@ -19,6 +20,7 @@ import (
 )
 
 type Agent struct {
+	log                             *slog.Logger
 	rabbitMQURL                     string
 	titleForExpressionQueue         string
 	titleForResultAndPingQueue      string
@@ -39,6 +41,7 @@ type Agent struct {
 }
 
 func NewAgent(
+	log *slog.Logger,
 	rabbitMQURL string,
 	dbCfg *storage.Storage,
 	titleForExpressionQueue,
@@ -67,10 +70,11 @@ func NewAgent(
 			Status:                       "waiting",
 		})
 	if err != nil {
-		log.Printf("Can't create Agent: %v", err)
+		log.Error("can't create agent", sl.Err(err))
 		return nil, err
 	}
 	return &Agent{
+		log:                             log,
 		rabbitMQURL:                     rabbitMQURL,
 		titleForExpressionQueue:         titleForExpressionQueue,
 		titleForResultAndPingQueue:      titleForResultAndPingQueue,
@@ -142,10 +146,10 @@ func (a *Agent) PublishMessage(msg *ExpressionMessage) error {
 	)
 
 	if err != nil {
-		log.Printf("Can't publish message to %s queue: %v", a.amqpProducer.Queue.Name, err)
+		a.log.Error("can't publish message to queue", slog.String("queue", a.amqpProducer.Queue.Name), sl.Err(err))
 		return errors.New("can't publish message to queue")
 	}
-	log.Printf("Publishing message to Queue: %s", a.amqpProducer.Queue.Name)
+	a.log.Info("publishing message to queue", slog.String("queue", a.amqpProducer.Queue.Name))
 	return nil
 }
 
@@ -276,29 +280,28 @@ func (a *Agent) ChangeExpressionStatus(exprID int32, newStatus string) error {
 }
 
 func (a *Agent) MakeExpressionsTerminated() {
-	log.Println(a.allExpressions)
-
+	a.log.Info("all expressions", slog.Any("expressions", a.allExpressions))
 	for exprID := range a.allExpressions {
 		err := a.ChangeExpressionStatus(exprID, "terminated")
 		if err != nil {
-			log.Printf("Can't make expressions terminated 'cause agent is down: %v", err)
+			a.log.Error("can't make expressions terminated because agent is down", sl.Err(err))
 		}
 	}
 }
 
 func (a *Agent) ConsumeMessageFromComputers(result *ExpressionMessage) {
-	log.Println("Agent consume message from computers", result)
+	a.log.Info("agent consumes message from computers", slog.Any("message", result))
 	err := a.PublishMessage(result)
 	if err != nil {
 		err := a.Reconnect()
 		if err != nil {
-			log.Printf("Agent Error: %v", err)
+			a.log.Error("agent error", sl.Err(err))
 			a.kill <- struct{}{}
 			return
 		}
 		err = a.PublishMessage(result)
 		if err != nil {
-			log.Printf("Agent Error: %v", err)
+			a.log.Error("agent error", sl.Err(err))
 			a.kill <- struct{}{}
 			return
 		}
@@ -310,17 +313,17 @@ func (a *Agent) ConsumeMessageFromComputers(result *ExpressionMessage) {
 
 	err = a.DecrementActiveComputers()
 	if err != nil {
-		log.Printf("Agent Error: %v", err)
+		a.log.Error("agent error", sl.Err(err))
 		a.kill <- struct{}{}
 		return
 	}
 }
 
 func (a *Agent) ConsumeMessageFromAgentAgregator(msgFromAgentAgregator amqp.Delivery) {
-	log.Println("Agent consume msg from agent agregator", msgFromAgentAgregator.Body)
+	a.log.Info("agent consumes msg from agent agregator", slog.String("message", string(msgFromAgentAgregator.Body)))
 	var exprMsg ExpressionMessage
 	if err := json.Unmarshal(msgFromAgentAgregator.Body, &exprMsg); err != nil {
-		log.Printf("Agent Error: Failed to parse JSON: %v", err)
+		a.log.Error("agent error: failed to parse JSON", sl.Err(err))
 		a.kill <- struct{}{}
 		return
 	}
@@ -329,7 +332,7 @@ func (a *Agent) ConsumeMessageFromAgentAgregator(msgFromAgentAgregator amqp.Deli
 	if a.number_of_active_calculations >= a.number_of_parallel_calculations {
 		err := msgFromAgentAgregator.Nack(false, true)
 		if err != nil {
-			log.Printf("Agent Error: %v", err)
+			a.log.Error("agent error", sl.Err(err))
 			a.kill <- struct{}{}
 			a.mu.Unlock()
 			return
@@ -341,14 +344,14 @@ func (a *Agent) ConsumeMessageFromAgentAgregator(msgFromAgentAgregator amqp.Deli
 
 	err := msgFromAgentAgregator.Ack(false)
 	if err != nil {
-		log.Printf("Agent Error: Error acknowledging message: %v", err)
+		a.log.Error("agent error: error acknowledging message", sl.Err(err))
 		a.kill <- struct{}{}
 		return
 	}
 
 	err = a.ChangeExpressionStatus(exprMsg.ExpressionID, "computing")
 	if err != nil {
-		log.Printf("Agent Error: %v", err)
+		a.log.Error("agent error", sl.Err(err))
 		a.kill <- struct{}{}
 		return
 	}
@@ -359,14 +362,14 @@ func (a *Agent) ConsumeMessageFromAgentAgregator(msgFromAgentAgregator amqp.Deli
 
 	err = a.RunSimpleComputer(&exprMsg)
 	if err != nil {
-		log.Printf("Agent Error: %v", err)
+		a.log.Error("agent error", sl.Err(err))
 		a.kill <- struct{}{}
 		return
 	}
 
 	err = a.ChangeAgentStatusToRunningOrSleeping()
 	if err != nil {
-		log.Printf("Agent Error: %v", err)
+		a.log.Error("agent error", sl.Err(err))
 		a.kill <- struct{}{}
 		return
 	}
@@ -394,7 +397,7 @@ func AgentService(agent *Agent) {
 		case <-agent.kill:
 			err := agent.Terminate()
 			if err != nil {
-				log.Printf("Agent Error: %v", err)
+				agent.log.Error("agent error", sl.Err(err))
 			}
 			return
 		case <-ticker.C:
@@ -404,7 +407,7 @@ func AgentService(agent *Agent) {
 			}
 			err := agent.PublishMessage(&exprMsg)
 			if err != nil {
-				log.Printf("Agent Error: Can't send ping: %v", err)
+				agent.log.Error("agent error: can't send ping", sl.Err(err))
 			}
 		}
 	}
