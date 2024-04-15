@@ -5,4 +5,4 @@ sql:
     engine: "postgresql"
     gen:
       go:
-        out: "internal/database"
+        out: "internal/storage/postgres"

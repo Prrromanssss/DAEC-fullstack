@@ -1,3 +1,7 @@
+# github.com/BurntSushi/toml v1.2.1
+## explicit; go 1.16
+github.com/BurntSushi/toml
+github.com/BurntSushi/toml/internal
 # github.com/go-chi/chi v1.5.5
 ## explicit; go 1.16
 github.com/go-chi/chi
@@ -7,6 +11,9 @@ github.com/go-chi/cors
 # github.com/google/uuid v1.6.0
 ## explicit
 github.com/google/uuid
+# github.com/ilyakaznacheev/cleanenv v1.5.0
+## explicit; go 1.13
+github.com/ilyakaznacheev/cleanenv
 # github.com/joho/godotenv v1.5.1
 ## explicit; go 1.12
 github.com/joho/godotenv
@@ -18,3 +25,9 @@ github.com/lib/pq/scram
 # github.com/streadway/amqp v1.1.0
 ## explicit; go 1.10
 github.com/streadway/amqp
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
+gopkg.in/yaml.v3
+# olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3
+## explicit; go 1.13
+olympos.io/encoding/edn

@@ -1,18 +1,21 @@
 -- +goose Up
+DROP TYPE IF EXISTS expression_status;
 CREATE TYPE expression_status AS ENUM ('ready for computation', 'computing', 'result', 'terminated');
 
-CREATE TABLE expressions (
-    id UUID PRIMARY KEY,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL,
-    data TEXT NOT NULL,
-    parse_data TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS expressions (
+    expression_id int GENERATED ALWAYS AS IDENTITY,
+    created_at timestamp NOT NULL,
+    updated_at timestamp NOT NULL,
+    data text NOT NULL,
+    parse_data text NOT NULL,
     status expression_status NOT NULL,
-    result INT NOT NULL DEFAULT 0,
-    is_ready BOOLEAN NOT NULL DEFAULT False
+    result int NOT NULL DEFAULT 0,
+    is_ready boolean NOT NULL DEFAULT false,
+
+    PRIMARY KEY(expression_id)
 );
 
 
 -- +goose Down
-DROP TABLE expressions;
-DROP TYPE expression_status;
+DROP TABLE IF EXISTS expressions;
+DROP TYPE IF EXISTS expression_status;

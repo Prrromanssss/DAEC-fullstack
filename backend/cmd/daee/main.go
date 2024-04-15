@@ -9,11 +9,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Prrromanssss/DAEE-fullstack/config"
-	"github.com/Prrromanssss/DAEE-fullstack/handlers"
-	"github.com/Prrromanssss/DAEE-fullstack/pkg/agent"
-	"github.com/Prrromanssss/DAEE-fullstack/pkg/logcleaner"
-	"github.com/Prrromanssss/DAEE-fullstack/pkg/reload"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/agent"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/handlers"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/middleware"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/logcleaner"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -45,30 +47,16 @@ func main() {
 		log.Fatalf("Can't load env variables: %v", err)
 	}
 
-	// Configuration database
-	dbURL := os.Getenv("DB_URL")
+	// Load config
+	cfg := config.MustLoad()
 
-	if dbURL == "" {
-		log.Fatal("DB_URL is not found in environment")
-	}
-
-	dbCfg := config.NewDBConfig(dbURL)
-
-	// Configuration RabbitMQ
-	rabbitMQURL := os.Getenv("RABBIT_MQ_URL")
-
-	if rabbitMQURL == "" {
-		log.Fatal("RABBITMQ_URL is not found in environment")
-	}
-
-	queueForSendToAgentsString := "Queue for sending expressions to agents"
-	queueForConsumeFromAgentsString := "Queue for consuming results and pings from agents"
+	dbCfg := storage.NewStorage(cfg.StorageURL)
 
 	agentAgregator, err := agent.NewAgentAgregator(
-		rabbitMQURL,
+		cfg.RabbitMQURL,
 		dbCfg,
-		queueForSendToAgentsString,
-		queueForConsumeFromAgentsString,
+		cfg.QueueForSendToAgents,
+		cfg.QueueForConsumeFromAgents,
 	)
 	if err != nil {
 		log.Fatalf("Agent Agregator Error: %v", err)
@@ -77,13 +65,10 @@ func main() {
 	go agent.AgregateAgents(agentAgregator)
 
 	// Reload computing expressions
-	err = reload.ReloadComputingExpressions(dbCfg, agentAgregator)
+	err = orchestrator.ReloadComputingExpressions(dbCfg, agentAgregator)
 	if err != nil {
 		log.Fatalf("Can't reload computin expressions: %v", err)
 	}
-
-	// Create operation
-	config.ConfigOperation(dbCfg)
 
 	// Delete previous agents
 	err = dbCfg.DB.DeleteAgents(context.Background())
@@ -93,10 +78,10 @@ func main() {
 
 	// Create Agent1
 	agent1, err := agent.NewAgent(
-		rabbitMQURL,
+		cfg.RabbitMQURL,
 		dbCfg,
-		queueForSendToAgentsString,
-		queueForConsumeFromAgentsString,
+		cfg.QueueForSendToAgents,
+		cfg.QueueForConsumeFromAgents,
 		5,
 		200,
 	)
@@ -108,10 +93,10 @@ func main() {
 
 	// Create Agent2
 	agent2, err := agent.NewAgent(
-		rabbitMQURL,
+		cfg.RabbitMQURL,
 		dbCfg,
-		queueForSendToAgentsString,
-		queueForConsumeFromAgentsString,
+		cfg.QueueForSendToAgents,
+		cfg.QueueForConsumeFromAgents,
 		5,
 		200,
 	)
@@ -123,10 +108,10 @@ func main() {
 
 	// Create Agent3
 	agent3, err := agent.NewAgent(
-		rabbitMQURL,
+		cfg.RabbitMQURL,
 		dbCfg,
-		queueForSendToAgentsString,
-		queueForConsumeFromAgentsString,
+		cfg.QueueForSendToAgents,
+		cfg.QueueForConsumeFromAgents,
 		5,
 		200,
 	)
@@ -150,23 +135,26 @@ func main() {
 
 	v1Router := chi.NewRouter()
 
-	v1Router.Post("/expressions", handlers.MiddlewareAgentAgregatorAndDBConfig(
+	v1Router.Post("/expressions", middleware.MiddlewareAgentAgregatorAndDBConfig(
 		handlers.HandlerCreateExpression,
 		dbCfg,
 		agentAgregator,
 	))
-	v1Router.Get("/expressions", handlers.MiddlewareApiConfig(handlers.HandlerGetExpressions, dbCfg))
+	v1Router.Get("/expressions", middleware.MiddlewareApiConfig(handlers.HandlerGetExpressions, dbCfg))
 
-	v1Router.Get("/operations", handlers.MiddlewareApiConfig(handlers.HandlerGetOperations, dbCfg))
-	v1Router.Patch("/operations", handlers.MiddlewareApiConfig(handlers.HandlerUpdateOperation, dbCfg))
+	v1Router.Get("/operations", middleware.MiddlewareApiConfig(handlers.HandlerGetOperations, dbCfg))
+	v1Router.Patch("/operations", middleware.MiddlewareApiConfig(handlers.HandlerUpdateOperation, dbCfg))
 
-	v1Router.Get("/agents", handlers.MiddlewareApiConfig(handlers.HandlerGetAgents, dbCfg))
+	v1Router.Get("/agents", middleware.MiddlewareApiConfig(handlers.HandlerGetAgents, dbCfg))
 
 	router.Mount("/v1", v1Router)
 
 	srv := &http.Server{
-		Handler: router,
-		Addr:    ":3000",
+		Handler:      router,
+		Addr:         cfg.Address,
+		ReadTimeout:  cfg.Timeout,
+		WriteTimeout: cfg.Timeout,
+		IdleTimeout:  cfg.IdleTimeout,
 	}
 
 	log.Printf("Server starting on port %v", 3000)

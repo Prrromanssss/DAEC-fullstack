@@ -1,6 +1,6 @@
 -- name: CreateOperation :exec
-INSERT INTO operations (id, operation_type, execution_time)
-VALUES ($1, $2, $3)
+INSERT INTO operations (operation_type, execution_time)
+VALUES ($1, $2)
 RETURNING *;
 
 -- name: UpdateOperationTime :one
