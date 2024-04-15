@@ -3,7 +3,6 @@
 ![Main page](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/images/expressions.png)
 ![Agents](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/images/agents.png)
 
-t.me/sourr_cream - для связи
 
 ## Deployment instructions
 
