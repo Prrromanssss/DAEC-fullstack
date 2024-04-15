@@ -11,6 +11,7 @@ import (
 
 type Config struct {
 	Env              string `yaml:"env" env:"ENV" env-default:"local"`
+	LogPath          string `yaml:"log_path" env-required:"true"`
 	DatabaseInstance `yaml:"database_instance" env-required:"true"`
 	RabbitQueue      `yaml:"rabbit_queue" env-required:"true"`
 	HTTPServer       `yaml:"http_server" env-required:"true"`

@@ -1,4 +1,5 @@
 env: "local"
+log_path: "./backend/daee.log"
 rabbit_queue:
   rabbitmq_url: "amqp://guest:guest@localhost:5672/"
   queue_for_send_to_agents: "Expressions to agents"

@@ -2,26 +2,23 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/agent"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/handlers"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/middleware"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/handlers/slogpretty"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/logcleaner"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
-	"github.com/Prrromanssss/DAEE-fullstack/lib/logger/handlers/slogpretty"
-	"github.com/Prrromanssss/DAEE-fullstack/lib/logger/logcleaner"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
-	"github.com/joho/godotenv"
 )
 
 const (
@@ -31,32 +28,19 @@ const (
 )
 
 func main() {
-	path, err := os.Getwd()
-	if err != nil {
-		log.Fatal("Can't get pwd")
-	}
-	rootPath := filepath.Dir(filepath.Dir(path))
-	logPath := fmt.Sprintf("%s/daee.log", rootPath)
-
-	// Configuration log file
-	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		log.Fatal("Log file is not found in environment")
-	} else {
-		log.SetOutput(file)
-	}
-	defer file.Close()
-
-	go logcleaner.CleanLog(10*time.Minute, logPath, 100)
-
-	// Load env variables
-	err = godotenv.Load(fmt.Sprintf("%s/.env", filepath.Dir(rootPath)))
-	if err != nil {
-		log.Fatalf("Can't load env variables: %v", err)
-	}
-
 	// Load config
 	cfg := config.MustLoad()
+
+	// Configuration logger
+	log := setupLogger(cfg.Env, cfg.LogPath)
+	log.Info(
+		"start daee",
+		slog.String("env", cfg.Env),
+		slog.String("version", "2"),
+	)
+	log.Debug("debug messages are enabled")
+
+	go logcleaner.CleanLog(10*time.Minute, cfg.LogPath, 100)
 
 	dbCfg := storage.NewStorage(cfg.StorageURL)
 
@@ -67,7 +51,7 @@ func main() {
 		cfg.QueueForConsumeFromAgents,
 	)
 	if err != nil {
-		log.Fatalf("Agent Agregator Error: %v", err)
+		log.Error("agent agregator error", sl.Err(err))
 	}
 
 	go agent.AgregateAgents(agentAgregator)
@@ -75,13 +59,13 @@ func main() {
 	// Reload computing expressions
 	err = orchestrator.ReloadComputingExpressions(dbCfg, agentAgregator)
 	if err != nil {
-		log.Fatalf("Can't reload computin expressions: %v", err)
+		log.Error("can't reload computing expressions", sl.Err(err))
 	}
 
 	// Delete previous agents
 	err = dbCfg.DB.DeleteAgents(context.Background())
 	if err != nil {
-		log.Fatalf("Can't delete previous agents: %v", err)
+		log.Error("can't delete previous agents", sl.Err(err))
 	}
 
 	// Create Agent1
@@ -94,7 +78,7 @@ func main() {
 		200,
 	)
 	if err != nil {
-		log.Fatalf("Can't create agent1: %v", err)
+		log.Error("can't create agent1", sl.Err(err))
 	}
 
 	go agent.AgentService(agent1)
@@ -109,7 +93,7 @@ func main() {
 		200,
 	)
 	if err != nil {
-		log.Fatalf("Can't create agent2: %v", err)
+		log.Error("can't create agent2", sl.Err(err))
 	}
 
 	go agent.AgentService(agent2)
@@ -124,7 +108,7 @@ func main() {
 		200,
 	)
 	if err != nil {
-		log.Fatalf("Can't create agent2: %v", err)
+		log.Error("can't create agent2", sl.Err(err))
 	}
 
 	go agent.AgentService(agent3)
@@ -165,27 +149,36 @@ func main() {
 		IdleTimeout:  cfg.IdleTimeout,
 	}
 
-	log.Printf("Server starting on port %v", 3000)
+	log.Info("server starting", slog.String("host", cfg.Address))
 	err = srv.ListenAndServe()
 	if err != nil {
-		log.Fatal(err)
+		log.Error("failed to start server ", sl.Err(err))
 	}
+
+	log.Info("server stopped")
 }
 
-func setupLogger(env string) *slog.Logger {
+func setupLogger(env, logPath string) *slog.Logger {
 	var log *slog.Logger
+
+	logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		panic("failed to open log file: " + err.Error())
+	}
+	defer logFile.Close()
+
 	switch env {
 	case envLocal:
-		log = setupPrettySlog()
+		log = setupPrettySlog(logFile)
 	case envDev:
 		log = slog.New(
-			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			slog.NewJSONHandler(logFile, &slog.HandlerOptions{
 				Level: slog.LevelDebug,
 			}),
 		)
 	case envProd:
 		log = slog.New(
-			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			slog.NewJSONHandler(logFile, &slog.HandlerOptions{
 				Level: slog.LevelInfo,
 			}),
 		)
@@ -193,14 +186,14 @@ func setupLogger(env string) *slog.Logger {
 	return log
 }
 
-func setupPrettySlog() *slog.Logger {
+func setupPrettySlog(logFile *os.File) *slog.Logger {
 	opts := slogpretty.PrettyHandlerOptions{
 		SlogOpts: &slog.HandlerOptions{
 			Level: slog.LevelDebug,
 		},
 	}
 
-	handler := opts.NewPrettyHandler(os.Stdout)
+	handler := opts.NewPrettyHandler(logFile)
 
 	return slog.New(handler)
 }
