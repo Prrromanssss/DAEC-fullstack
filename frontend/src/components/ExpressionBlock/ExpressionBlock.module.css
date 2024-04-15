@@ -1,0 +1,28 @@
+.expressionBlock {
+  border: 1px solid blueviolet;
+  width: fit-content;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.icon {
+  width: 30px;
+  height: 30px;
+}
+
+.headerBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.createdAt {
+  margin: 0;
+  margin-top: 10px;
+  font-size: 20px;
+}
