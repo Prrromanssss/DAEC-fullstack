@@ -2,8 +2,8 @@ env: "local"
 log_path: "./backend/daee.log"
 rabbit_queue:
   rabbitmq_url: "amqp://guest:guest@localhost:5672/"
-  queue_for_send_to_agents: "Expressions to agents"
-  queue_for_consume_from_agents: "Results from agents"
+  queue_for_expressions_to_agents: "Expressions to agents"
+  queue_for_results_from_agents: "Results from agents"
 http_server:
   address: "localhost:3000"
   timeout: 4s

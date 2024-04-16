@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"os"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/brokers"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator/parser"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/rabbitmq"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
 
@@ -20,139 +20,161 @@ import (
 )
 
 type AgentAgregator struct {
-	log          *slog.Logger
-	amqpConfig   *rabbitmq.AMQPConfig
-	dbConfig     *storage.Storage
-	tasks        chan MessageFromOrchestrator
-	amqpProducer *rabbitmq.AMQPProducer
-	amqpConsumer *rabbitmq.AMQPConsumer
-	mu           *sync.Mutex
+	log      *slog.Logger
+	dbConfig *storage.Storage
+	Tasks    chan messages.MessageFromOrchestrator
+	mu       *sync.Mutex
+	kill     context.CancelFunc
 }
 
-type MessageFromOrchestrator struct {
-	ExpressionID int32  `json:"expression_id"`
-	Expression   string `json:"expression"`
-}
-
+// NewAgentAgregator creates new AgentAgregator.
 func NewAgentAgregator(
 	log *slog.Logger,
-	rabbitMQURL string,
 	dbCfg *storage.Storage,
-	titleForExpressionQueue,
-	titleForResultAndPingQueue string,
+	kill context.CancelFunc,
 ) (*AgentAgregator, error) {
-	amqpCfg, err := rabbitmq.NewAMQPConfig(log, rabbitMQURL)
-	if err != nil {
-		return nil, fmt.Errorf("can't create NewAMQPConfig for Agent Agregator: %v", err)
-	}
-	amqpProd, err := rabbitmq.NewAMQPProducer(log, amqpCfg, titleForExpressionQueue)
-	if err != nil {
-		return nil, fmt.Errorf("can't create NewAMQPProducer for Agent Agregator: %v", err)
-	}
-	amqpCons, err := rabbitmq.NewAMQPConsumer(log, amqpCfg, titleForResultAndPingQueue)
-	if err != nil {
-		return nil, fmt.Errorf("can't create NewAMQPConsumer for Agent Agregator: %v", err)
-	}
 
 	return &AgentAgregator{
-		amqpConfig:   amqpCfg,
-		dbConfig:     dbCfg,
-		tasks:        make(chan MessageFromOrchestrator),
-		amqpProducer: amqpProd,
-		amqpConsumer: amqpCons,
-		mu:           &sync.Mutex{},
+		log:      log,
+		dbConfig: dbCfg,
+		Tasks:    make(chan messages.MessageFromOrchestrator),
+		mu:       &sync.Mutex{},
+		kill:     kill,
 	}, nil
 }
 
-func (aa *AgentAgregator) AddTask(expressionMessage MessageFromOrchestrator) {
-	aa.tasks <- expressionMessage
+// AddTask adds task to AgentAgregator.
+func (aa *AgentAgregator) AddTask(expressionMessage messages.MessageFromOrchestrator) {
+	aa.Tasks <- expressionMessage
 }
 
-func (aa *AgentAgregator) PublishMessage(expressionID int32, token, expresssion string) error {
-	msg := ExpressionMessage{
-		ExpressionID: expressionID,
-		Token:        token,
-		Expression:   expresssion,
-	}
-	jsonData, err := json.Marshal(msg)
+// ReloadComputingExpressions add not completed expressions to AgentAgregator.
+func (aa *AgentAgregator) ReloadComputingExpressions(
+	ctx context.Context,
+) error {
+	const fn = "agentagregator.ReloadComputingExpressions"
+
+	expressions, err := aa.dbConfig.DB.GetComputingExpressions(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to encode message to JSON: %v", err)
+		return fmt.Errorf("orhestrator Error: %v, fn: %s", err, fn)
 	}
 
-	err = aa.amqpProducer.ChannelForProduce.Publish(
-		"",
-		aa.amqpProducer.Queue.Name,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        jsonData,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("can't publish message to %s queue: %v", aa.amqpProducer.Queue.Name, err)
+	for _, expr := range expressions {
+		msgToQueue := messages.MessageFromOrchestrator{
+			ExpressionID: expr.ExpressionID,
+			Expression:   expr.ParseData,
+		}
+		aa.AddTask(msgToQueue)
 	}
-	aa.log.Info("publishing message to Queue from Agent Agregator", slog.String("queue", aa.amqpProducer.Queue.Name))
+
 	return nil
 }
 
-func (aa *AgentAgregator) HandlePing(agentID int32) error {
-	aa.mu.Lock()
-	defer aa.mu.Unlock()
+// HandlePing accepts ping from agent.
+func (aa *AgentAgregator) HandlePing(ctx context.Context, agentID int32) error {
+	const fn = "agentagregator.HandlePing"
 
 	err := aa.dbConfig.DB.UpdateAgentLastPing(
-		context.Background(),
+		ctx,
 		postgres.UpdateAgentLastPingParams{
 			AgentID:  agentID,
 			LastPing: time.Now().UTC(),
 		})
 	if err != nil {
-		return fmt.Errorf("can't update last ping: %v", err)
+		return fmt.Errorf("can't update last ping: %v, fn: %s", err, fn)
 	}
 	return nil
 }
 
-func (aa *AgentAgregator) UpdateExpressionFromAgents(exprMsg ExpressionMessage) (string, string, error) {
-	aa.mu.Lock()
-	defer aa.mu.Unlock()
+// HandleExpressionFromAgents makes expressions ready or publishes it again to queue.
+func (aa *AgentAgregator) HandleExpression(
+	ctx context.Context,
+	exprMsg messages.ExpressionMessage,
+	producer brokers.Producer,
+) error {
+	const fn = "agentagregator.HandleExpressionFromAgents"
+
+	newResultAndToken, err := aa.UpdateExpressionFromAgents(ctx, exprMsg)
+	if err != nil {
+		return fmt.Errorf("agent agregator error: %v, fn: %s", err, fn)
+	}
+
+	result, err := strconv.Atoi(newResultAndToken.Result)
+
+	if err == nil &&
+		parser.IsNumber(newResultAndToken.Result) ||
+		(newResultAndToken.Result[0] == '-' && parser.IsNumber(newResultAndToken.Result[1:])) {
+		err := aa.UpdateExpressionToReady(ctx, result, exprMsg.ExpressionID)
+		if err != nil {
+			return fmt.Errorf("agent agregator error: %v, fn: %s", err, fn)
+		}
+
+		return nil
+	}
+	if newResultAndToken.Token != "" {
+		err := producer.PublishExpressionMessage(&messages.ExpressionMessage{
+			ExpressionID: exprMsg.ExpressionID,
+			Token:        newResultAndToken.Token,
+			Expression:   newResultAndToken.Result,
+		})
+		if err != nil {
+			return fmt.Errorf("agent agregator error: %v, fn: %s", err, fn)
+		}
+	}
+
+	return nil
+}
+
+// UpdateExpressionFromAgents consumes updated messages and update appropiate fields in database.
+func (aa *AgentAgregator) UpdateExpressionFromAgents(
+	ctx context.Context,
+	exprMsg messages.ExpressionMessage,
+) (messages.ResultAndTokenMessage, error) {
+	const fn = "agentagregator.UpdateExpressionFromAgents"
 
 	expression, err := aa.dbConfig.DB.GetExpressionByID(
-		context.Background(),
+		ctx,
 		exprMsg.ExpressionID,
 	)
 	if err != nil {
-		return "", "", fmt.Errorf("can't get expression by id: %v", err)
+		return messages.ResultAndTokenMessage{},
+			fmt.Errorf("can't get expression by id: %v, fn: %s", err, fn)
 	}
 
-	newExpr, newToken, err := parser.InsertResultToToken(
+	resAndTokenMsg, err := parser.InsertResultToToken(
 		expression.ParseData,
 		exprMsg.Token,
 		exprMsg.Result,
 	)
 	if err != nil {
-		return "", "", fmt.Errorf("can't insert tokens to expression: %v", err)
+		return messages.ResultAndTokenMessage{},
+			fmt.Errorf("can't insert tokens to expression: %v, fn: %s", err, fn)
 	}
 
 	err = aa.dbConfig.DB.UpdateExpressionParseData(
-		context.Background(),
+		ctx,
 		postgres.UpdateExpressionParseDataParams{
 			ExpressionID: exprMsg.ExpressionID,
-			ParseData:    newExpr,
+			ParseData:    resAndTokenMsg.Result,
 		})
-
 	if err != nil {
-		return "", "", fmt.Errorf("can't update expression data: %v", err)
+		return messages.ResultAndTokenMessage{},
+			fmt.Errorf("can't update expression data: %v, fn: %s", err, fn)
 	}
 
-	return newExpr, newToken, nil
+	return resAndTokenMsg, nil
 }
 
-func (aa *AgentAgregator) UpdateExpressionToReady(result int, exprID int32) error {
-	aa.mu.Lock()
-	defer aa.mu.Unlock()
+// UpdateExpressionToReady updates expression to ready.
+func (aa *AgentAgregator) UpdateExpressionToReady(
+	ctx context.Context,
+	result int,
+	exprID int32,
+) error {
+	const fn = "agentagregator.UpdateExpressionToReady"
 
 	err := aa.dbConfig.DB.MakeExpressionReady(
-		context.Background(),
+		ctx,
 		postgres.MakeExpressionReadyParams{
 			ParseData:    "",
 			Result:       int32(result),
@@ -160,85 +182,76 @@ func (aa *AgentAgregator) UpdateExpressionToReady(result int, exprID int32) erro
 			ExpressionID: exprID,
 		})
 	if err != nil {
-		return fmt.Errorf("can't make expression ready: %v", err)
+		return fmt.Errorf("can't make expression ready: %v, fn: %s", err, fn)
 	}
+
 	return nil
 }
 
-func (aa *AgentAgregator) ConsumeMessagesFromAgents(msgFromAgents amqp.Delivery) {
-	aa.log.Info("agent agregator consume message from agent", slog.String("msg", string(msgFromAgents.Body)))
+// ConsumeMessagesFromAgents consumes message from agents.
+// If it is ping handle it with HandlePing method.
+// If it is expression handle it with HandleExpression method.
+func (aa *AgentAgregator) ConsumeMessagesFromAgents(
+	ctx context.Context,
+	msgFromAgents amqp.Delivery,
+	producer brokers.Producer,
+) {
+	const fn = "agentagregator.ConsumeMessagesFromAgents"
+
+	log := aa.log.With(
+		slog.String("fn", fn),
+	)
+
+	log.Info("agent agregator consumes message from agent", slog.String("msg", string(msgFromAgents.Body)))
+
 	err := msgFromAgents.Ack(false)
 	if err != nil {
-		aa.log.Error("error acknowledging message", sl.Err(err))
-		os.Exit(1)
+		log.Error("error acknowledging message", sl.Err(err))
+		aa.kill()
 	}
-	var exprMsg ExpressionMessage
+
+	var exprMsg messages.ExpressionMessage
 	if err := json.Unmarshal(msgFromAgents.Body, &exprMsg); err != nil {
-		aa.log.Error("failed to parse JSON", sl.Err(err))
-		os.Exit(1)
+		log.Error("failed to parse JSON", sl.Err(err))
+		aa.kill()
 	}
 
 	if exprMsg.IsPing {
-		err := aa.HandlePing(exprMsg.AgentID)
+		err := aa.HandlePing(ctx, exprMsg.AgentID)
 		if err != nil {
-			aa.log.Error("agent agregator error", sl.Err(err))
-			os.Exit(1)
+			log.Error("agent agregator error", sl.Err(err))
+			aa.kill()
 		}
 	} else {
-		newExpr, newToken, err := aa.UpdateExpressionFromAgents(exprMsg)
+		err := aa.HandleExpression(ctx, exprMsg, producer)
 		if err != nil {
-			aa.log.Error("agent agregator error", sl.Err(err))
-			os.Exit(1)
-		}
-
-		result, err := strconv.Atoi(newExpr)
-
-		if err == nil &&
-			parser.IsNumber(newExpr) ||
-			(newExpr[0] == '-' && parser.IsNumber(newExpr[1:])) {
-			err := aa.UpdateExpressionToReady(result, exprMsg.ExpressionID)
-			if err != nil {
-				aa.log.Error("agent agregator error:", sl.Err(err))
-				os.Exit(1)
-			}
-			return
-		}
-
-		if newToken != "" {
-			err := aa.PublishMessage(exprMsg.ExpressionID, newToken, newExpr)
-			if err != nil {
-				aa.log.Error("agent agregator error", sl.Err(err))
-				os.Exit(1)
-			}
+			log.Error("", sl.Err(err))
+			aa.kill()
 		}
 	}
 }
 
-func (aa *AgentAgregator) ConsumeMessagesFromOrchestrator(expressionMessage MessageFromOrchestrator) {
-	aa.log.Info("agent agregator consume message from orchestrator")
+// ConsumeMessagesFromOrchestrator consumes message from orchestrator,
+// get tokens from this message,
+// publishing it to queue.
+func (aa *AgentAgregator) ConsumeMessagesFromOrchestrator(
+	expressionMessage messages.MessageFromOrchestrator,
+	producer brokers.Producer,
+) {
+	const fn = "agentagregator.ConsumeMessagesFromOrchestrator"
+
+	aa.log.Info("agent agregator consumes message from orchestrator")
+
 	tokens := parser.GetTokens(expressionMessage.Expression)
 	for _, token := range tokens {
-		err := aa.PublishMessage(expressionMessage.ExpressionID, token, expressionMessage.Expression)
+		err := producer.PublishExpressionMessage(&messages.ExpressionMessage{
+			ExpressionID: expressionMessage.ExpressionID,
+			Token:        token,
+			Expression:   expressionMessage.Expression,
+		})
 		if err != nil {
-			aa.log.Error("agent agregator error", sl.Err(err))
-			os.Exit(1)
+			aa.log.Error("agent agregator error", sl.Err(err), slog.String("fn", fn))
+			aa.kill()
 		}
-	}
-}
-
-func AgregateAgents(agentAg *AgentAgregator) {
-	defer agentAg.amqpConfig.Conn.Close()
-	defer agentAg.amqpConfig.ChannelForConsume.Close()
-	defer agentAg.amqpConfig.ChannelForProduce.Close()
-
-	go func() {
-		for msgFromAgents := range agentAg.amqpConsumer.Messages {
-			go agentAg.ConsumeMessagesFromAgents(msgFromAgents)
-		}
-	}()
-
-	for {
-		expressionMessage := <-agentAg.tasks
-		go agentAg.ConsumeMessagesFromOrchestrator(expressionMessage)
 	}
 }

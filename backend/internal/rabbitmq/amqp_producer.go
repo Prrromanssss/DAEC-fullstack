@@ -45,7 +45,7 @@ func NewAMQPProducer(log *slog.Logger, amqpCfg *AMQPConfig, queueName string) (*
 	}, nil
 }
 
-func (ap *AMQPProducer) PublishMessage(msg *messages.ExpressionMessage) error {
+func (ap *AMQPProducer) PublishExpressionMessage(msg *messages.ExpressionMessage) error {
 	jsonData, err := json.Marshal(msg)
 	if err != nil {
 		return errors.New("failed to encode message to JSON")
@@ -72,7 +72,11 @@ func (ap *AMQPProducer) PublishMessage(msg *messages.ExpressionMessage) error {
 }
 
 func (ap *AMQPProducer) Reconnect() (*AMQPProducer, error) {
-	ap.channel.Close()
+	ap.Close()
 
 	return NewAMQPProducer(ap.log, ap.amqpCfg, ap.Queue.Name)
+}
+
+func (ap *AMQPProducer) Close() {
+	ap.channel.Close()
 }

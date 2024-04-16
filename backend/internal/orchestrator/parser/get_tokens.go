@@ -6,6 +6,8 @@ import (
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
 )
 
 func GetTokens(parseExpression string) []string {
@@ -25,7 +27,7 @@ func GetTokens(parseExpression string) []string {
 	return res
 }
 
-func InsertResultToToken(parseExpression, token string, result int) (string, string, error) {
+func InsertResultToToken(parseExpression, token string, result int) (messages.ResultAndTokenMessage, error) {
 	ind := 0
 	tokens := strings.Split(parseExpression, " ")
 	res := make([]string, 0)
@@ -33,7 +35,7 @@ func InsertResultToToken(parseExpression, token string, result int) (string, str
 	newToken := ""
 	isTokenFind := false
 	if len(tokens) == 3 {
-		return fmt.Sprint(result), "", nil
+		return messages.ResultAndTokenMessage{Result: fmt.Sprint(result)}, nil
 	}
 	for ind+2 < len(tokens) {
 		if string(tokens[ind]) == sourceTokens[0] &&
@@ -42,7 +44,7 @@ func InsertResultToToken(parseExpression, token string, result int) (string, str
 			res = append(res, strconv.Itoa(result))
 			isTokenFind = true
 			if ind > 0 && ind+3 >= len(tokens) {
-				return "", "", errors.New("invalidate expression")
+				return messages.ResultAndTokenMessage{}, errors.New("invalidate expression")
 			}
 			if ind > 0 && IsNumber(string(tokens[ind-1])) && !IsNumber(string(tokens[ind+3])) {
 				newToken = fmt.Sprint(tokens[ind-1], " ", result, " ", tokens[ind+3])
@@ -66,7 +68,11 @@ func InsertResultToToken(parseExpression, token string, result int) (string, str
 		ind++
 	}
 	if !isTokenFind {
-		return "", "", errors.New("can't find token")
+		return messages.ResultAndTokenMessage{}, errors.New("can't find token")
 	}
-	return strings.Join(res, " "), newToken, nil
+
+	return messages.ResultAndTokenMessage{
+		Result: strings.Join(res, " "),
+		Token:  newToken,
+	}, nil
 }

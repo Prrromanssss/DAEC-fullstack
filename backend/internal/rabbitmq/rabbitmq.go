@@ -26,3 +26,7 @@ func NewAMQPConfig(log *slog.Logger, amqpUrl string) (*AMQPConfig, error) {
 		conn: conn,
 	}, nil
 }
+
+func (ac *AMQPConfig) Close() {
+	ac.conn.Close()
+}

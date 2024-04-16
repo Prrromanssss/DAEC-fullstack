@@ -7,14 +7,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/agent"
+	agentservice "github.com/Prrromanssss/DAEE-fullstack/cmd/agent"
+	agentagregatorservice "github.com/Prrromanssss/DAEE-fullstack/cmd/agent_agregator"
+
 	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/handlers"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/middleware"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/handlers/slogpretty"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/logcleaner"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
 
 	"github.com/go-chi/chi"
@@ -44,23 +45,11 @@ func main() {
 
 	dbCfg := storage.NewStorage(cfg.StorageURL)
 
-	agentAgregator, err := agent.NewAgentAgregator(
-		log,
-		cfg.RabbitMQURL,
-		dbCfg,
-		cfg.QueueForSendToAgents,
-		cfg.QueueForConsumeFromAgents,
-	)
+	// agentAgregator
+	agentAgr, err := agentagregatorservice.RunAgentAgregator(log, cfg, dbCfg)
 	if err != nil {
-		log.Error("agent agregator error", sl.Err(err))
-	}
-
-	go agent.AgregateAgents(agentAgregator)
-
-	// Reload computing expressions
-	err = orchestrator.ReloadComputingExpressions(dbCfg, agentAgregator)
-	if err != nil {
-		log.Error("can't reload computing expressions", sl.Err(err))
+		log.Error("can't make agent agregator", sl.Err(err))
+		return
 	}
 
 	// Delete previous agents
@@ -70,54 +59,15 @@ func main() {
 	}
 
 	// Create Agent1
-	agent1, err := agent.NewAgent(
-		log,
-		cfg.RabbitMQURL,
-		dbCfg,
-		cfg.QueueForSendToAgents,
-		cfg.QueueForConsumeFromAgents,
-		5,
-		200,
-	)
-	if err != nil {
-		log.Error("can't create agent1", sl.Err(err))
-	}
-
-	go agent.AgentService(agent1)
+	agentservice.RunAgent(log, cfg, dbCfg)
 
 	// Create Agent2
-	agent2, err := agent.NewAgent(
-		log,
-		cfg.RabbitMQURL,
-		dbCfg,
-		cfg.QueueForSendToAgents,
-		cfg.QueueForConsumeFromAgents,
-		5,
-		200,
-	)
-	if err != nil {
-		log.Error("can't create agent2", sl.Err(err))
-	}
-
-	go agent.AgentService(agent2)
+	agentservice.RunAgent(log, cfg, dbCfg)
 
 	// Create Agent3
-	agent3, err := agent.NewAgent(
-		log,
-		cfg.RabbitMQURL,
-		dbCfg,
-		cfg.QueueForSendToAgents,
-		cfg.QueueForConsumeFromAgents,
-		5,
-		200,
-	)
-	if err != nil {
-		log.Error("can't create agent2", sl.Err(err))
-	}
+	agentservice.RunAgent(log, cfg, dbCfg)
 
-	go agent.AgentService(agent3)
-
-	// Configuration http server
+	// Configuration http-server
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -134,7 +84,7 @@ func main() {
 	v1Router.Post("/expressions", middleware.MiddlewareAgentAgregatorAndDBConfig(
 		handlers.HandlerCreateExpression,
 		dbCfg,
-		agentAgregator,
+		agentAgr,
 	))
 	v1Router.Get("/expressions", middleware.MiddlewareApiConfig(handlers.HandlerGetExpressions, dbCfg))
 

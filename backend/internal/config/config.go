@@ -24,9 +24,9 @@ type HTTPServer struct {
 }
 
 type RabbitQueue struct {
-	RabbitMQURL               string `yaml:"rabbitmq_url" env-default:"amqp://guest:guest@localhost:5672/"`
-	QueueForSendToAgents      string `yaml:"queue_for_send_to_agents" env-required:"true"`
-	QueueForConsumeFromAgents string `yaml:"queue_for_consume_from_agents" env-required:"true"`
+	RabbitMQURL                 string `yaml:"rabbitmq_url" env-default:"amqp://guest:guest@localhost:5672/"`
+	QueueForExpressionsToAgents string `yaml:"queue_for_expressions_to_agents" env-required:"true"`
+	QueueForResultsFromAgents   string `yaml:"queue_for_results_from_agents" env-required:"true"`
 }
 
 type DatabaseInstance struct {

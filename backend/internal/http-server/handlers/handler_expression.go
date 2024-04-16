@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/agent"
+	agentagregator "github.com/Prrromanssss/DAEE-fullstack/internal/agent_agregator"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
+
 	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator/parser"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
@@ -17,7 +19,7 @@ func HandlerCreateExpression(
 	w http.ResponseWriter,
 	r *http.Request,
 	dbCfg *storage.Storage,
-	agentAgr *agent.AgentAgregator,
+	agentAgr *agentagregator.AgentAgregator,
 ) {
 	type parametrs struct {
 		Data string `json:"data"`
@@ -51,7 +53,7 @@ func HandlerCreateExpression(
 		return
 	}
 
-	msgToQueue := agent.MessageFromOrchestrator{
+	msgToQueue := messages.MessageFromOrchestrator{
 		ExpressionID: expression.ExpressionID,
 		Expression:   parseData,
 	}

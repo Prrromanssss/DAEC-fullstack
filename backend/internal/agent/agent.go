@@ -12,27 +12,16 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/brokers"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/rabbitmq"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
 
 	"github.com/streadway/amqp"
 )
 
-type Producer interface {
-	PublishMessage(msg *messages.ExpressionMessage) error
-	Reconnect() (*rabbitmq.AMQPProducer, error)
-}
-
-type Consumer interface {
-	Messages() <-chan amqp.Delivery
-}
-
 type Agent struct {
-	Producer
-	Consumer
 	postgres.Agent
 	log             *slog.Logger
 	dbConfig        *storage.Storage
@@ -42,22 +31,19 @@ type Agent struct {
 	kill            context.CancelFunc
 }
 
+// NewAgent creates new Agent.
 func NewAgent(
 	log *slog.Logger,
-	prod Producer,
-	cons Consumer,
 	dbCfg *storage.Storage,
 	agentObj postgres.Agent,
 	inactiveTime int32,
 	kill context.CancelFunc,
 ) (*Agent, error) {
 	return &Agent{
-		log:             log,
-		Producer:        prod,
-		Consumer:        cons,
 		Agent:           agentObj,
-		InactiveTime:    inactiveTime,
+		log:             log,
 		dbConfig:        dbCfg,
+		InactiveTime:    inactiveTime,
 		SimpleComputers: make(chan *messages.ExpressionMessage),
 		mu:              &sync.Mutex{},
 		kill:            kill,
@@ -80,7 +66,7 @@ func (a *Agent) GetSafelyNumberOfParallelCalculations() int32 {
 	return a.NumberOfParallelCalculations
 }
 
-// Terminate changes agent status to terminate
+// Terminate changes agent status to terminate.
 func (a *Agent) Terminate() {
 	const fn = "agent.Terminate"
 
@@ -95,15 +81,15 @@ func (a *Agent) Terminate() {
 	}
 }
 
-// Ping sends pings to queue
-func (a *Agent) Ping() {
+// Ping sends pings to queue.
+func (a *Agent) Ping(producer brokers.Producer) {
 	const fn = "agent.Ping"
 
 	exprMsg := messages.ExpressionMessage{
 		IsPing:  true,
 		AgentID: a.AgentID,
 	}
-	err := a.Producer.PublishMessage(&exprMsg)
+	err := producer.PublishExpressionMessage(&exprMsg)
 	if err != nil {
 		a.log.Error("can't send ping", slog.String("fn", fn), sl.Err(err))
 
@@ -247,7 +233,7 @@ func (a *Agent) MakeExpressionsTerminated(ctx context.Context) {
 
 // ConsumeMessageFromComputers handles message from simple computers.
 // Producer publishes it to queue.
-func (a *Agent) ConsumeMessageFromComputers(ctx context.Context, result *messages.ExpressionMessage) {
+func (a *Agent) ConsumeMessageFromComputers(ctx context.Context, result *messages.ExpressionMessage, producer brokers.Producer) {
 	const fn = "agent.ConsumeMessageFromComputers"
 
 	log := a.log.With(
@@ -256,16 +242,15 @@ func (a *Agent) ConsumeMessageFromComputers(ctx context.Context, result *message
 
 	log.Info("agent consumes message from computers", slog.Any("message", result))
 
-	err := a.Producer.PublishMessage(result)
+	err := producer.PublishExpressionMessage(result)
 	if err != nil {
-		newProd, err := a.Producer.Reconnect()
-		a.Producer = newProd
+		producer, err = producer.Reconnect()
 		if err != nil {
 			log.Error("agent error", sl.Err(err))
 			a.kill()
 			return
 		}
-		err = a.Producer.PublishMessage(result)
+		err = producer.PublishExpressionMessage(result)
 		if err != nil {
 			log.Error("agent error", sl.Err(err))
 			a.kill()

@@ -55,8 +55,10 @@ func NewAMQPConsumer(log *slog.Logger, amqpCfg *AMQPConfig, queueName string) (*
 	}, nil
 }
 
-func (ac *AMQPConsumer) Reconnect() (*AMQPConsumer, error) {
-	ac.channel.Close()
+func (ac *AMQPConsumer) GetMessages() <-chan amqp.Delivery {
+	return ac.Messages
+}
 
-	return NewAMQPConsumer(ac.log, ac.amqpCfg, ac.Queue.Name)
+func (ac *AMQPConsumer) Close() {
+	ac.channel.Close()
 }
