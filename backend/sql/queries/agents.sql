@@ -23,3 +23,13 @@ WHERE agent_id = $2;
 
 -- name: DeleteAgents :exec
 TRUNCATE agents RESTART IDENTITY;
+
+-- name: DecrementNumberOfActiveCalculations :exec
+UPDATE agents
+SET number_of_active_calculations = number_of_active_calculations - 1
+WHERE agent_id = $1;
+
+-- name: IncrementNumberOfActiveCalculations :exec
+UPDATE agents
+SET number_of_active_calculations = number_of_active_calculations + 1
+WHERE agent_id = $1;

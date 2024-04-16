@@ -35,3 +35,8 @@ WHERE expression_id = $2;
 SELECT * FROM expressions
 WHERE status = 'computing'
 ORDER BY created_at DESC;
+
+-- name: MakeExpressionsTerminated :exec
+UPDATE expressions
+SET status = 'terminated'
+WHERE agent_id = $1;

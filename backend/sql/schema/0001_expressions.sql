@@ -4,6 +4,7 @@ CREATE TYPE expression_status AS ENUM ('ready for computation', 'computing', 're
 
 CREATE TABLE IF NOT EXISTS expressions (
     expression_id int GENERATED ALWAYS AS IDENTITY,
+    agent_id int,
     created_at timestamp NOT NULL,
     updated_at timestamp NOT NULL,
     data text NOT NULL,
@@ -12,7 +13,10 @@ CREATE TABLE IF NOT EXISTS expressions (
     result int NOT NULL DEFAULT 0,
     is_ready boolean NOT NULL DEFAULT false,
 
-    PRIMARY KEY(expression_id)
+    PRIMARY KEY(expression_id),
+    FOREIGN KEY(agent_id) 
+	  REFERENCES agents(agent_id)
+	  ON DELETE SET NULL
 );
 
 

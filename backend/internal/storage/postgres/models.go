@@ -5,6 +5,7 @@
 package postgres
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"time"
@@ -104,10 +105,12 @@ type Agent struct {
 	LastPing                     time.Time
 	Status                       AgentStatus
 	CreatedAt                    time.Time
+	NumberOfActiveCalculations   int32
 }
 
 type Expression struct {
 	ExpressionID int32
+	AgentID      sql.NullInt32
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	Data         string

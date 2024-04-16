@@ -1,4 +1,4 @@
-package agent
+package agentagregator
 
 import (
 	"context"
@@ -34,15 +34,6 @@ type MessageFromOrchestrator struct {
 	Expression   string `json:"expression"`
 }
 
-type ExpressionMessage struct {
-	ExpressionID int32  `json:"expression_id"`
-	Token        string `json:"token"`
-	Expression   string `json:"expression"`
-	Result       int    `json:"result"`
-	IsPing       bool   `json:"is_ping"`
-	AgentID      int32  `json:"agent_id"`
-}
-
 func NewAgentAgregator(
 	log *slog.Logger,
 	rabbitMQURL string,
@@ -50,15 +41,15 @@ func NewAgentAgregator(
 	titleForExpressionQueue,
 	titleForResultAndPingQueue string,
 ) (*AgentAgregator, error) {
-	amqpCfg, err := rabbitmq.NewAMQPConfig(rabbitMQURL)
+	amqpCfg, err := rabbitmq.NewAMQPConfig(log, rabbitMQURL)
 	if err != nil {
 		return nil, fmt.Errorf("can't create NewAMQPConfig for Agent Agregator: %v", err)
 	}
-	amqpProd, err := rabbitmq.NewAMQPProducer(amqpCfg, titleForExpressionQueue)
+	amqpProd, err := rabbitmq.NewAMQPProducer(log, amqpCfg, titleForExpressionQueue)
 	if err != nil {
 		return nil, fmt.Errorf("can't create NewAMQPProducer for Agent Agregator: %v", err)
 	}
-	amqpCons, err := rabbitmq.NewAMQPConsumer(amqpCfg, titleForResultAndPingQueue)
+	amqpCons, err := rabbitmq.NewAMQPConsumer(log, amqpCfg, titleForResultAndPingQueue)
 	if err != nil {
 		return nil, fmt.Errorf("can't create NewAMQPConsumer for Agent Agregator: %v", err)
 	}

@@ -1,101 +1,28 @@
 package rabbitmq
 
 import (
-	"log"
+	"log/slog"
 
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 	"github.com/streadway/amqp"
 )
 
 type AMQPConfig struct {
-	Conn              *amqp.Connection
-	ChannelForProduce *amqp.Channel
-	ChannelForConsume *amqp.Channel
+	log  *slog.Logger
+	conn *amqp.Connection
 }
 
-type AMQPConsumer struct {
-	Queue    amqp.Queue
-	Messages <-chan amqp.Delivery
-}
-
-type AMQPProducer struct {
-	Queue             amqp.Queue
-	ChannelForProduce *amqp.Channel
-}
-
-func NewAMQPConfig(amqpUrl string) (*AMQPConfig, error) {
+func NewAMQPConfig(log *slog.Logger, amqpUrl string) (*AMQPConfig, error) {
 	conn, err := amqp.Dial(amqpUrl)
 	if err != nil {
-		log.Fatalf("Can't connect to RabbitMQ: %v", err)
+		log.Error("can't connect to RabbitMQ", sl.Err(err))
 		return nil, err
 	}
 
-	log.Println("Successfully connected to RabbitMQ instance")
-
-	chProd, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("Can't create a channel from RabbitMQ: %v", err)
-		return nil, err
-	}
-	chCons, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("Can't create a channel from RabbitMQ: %v", err)
-		return nil, err
-	}
+	log.Info("successfully connected to RabbitMQ instance")
 
 	return &AMQPConfig{
-		Conn:              conn,
-		ChannelForProduce: chProd,
-		ChannelForConsume: chCons,
-	}, nil
-}
-
-func NewAMQPProducer(amqpCfg *AMQPConfig, queueName string) (*AMQPProducer, error) {
-	queue, err := amqpCfg.ChannelForProduce.QueueDeclare(
-		queueName,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Fatalf("Can't create a RabbitMQ queue: %v", err)
-		return nil, err
-	}
-	return &AMQPProducer{
-		Queue:             queue,
-		ChannelForProduce: amqpCfg.ChannelForProduce,
-	}, nil
-}
-
-func NewAMQPConsumer(amqpCfg *AMQPConfig, queueName string) (*AMQPConsumer, error) {
-	queue, err := amqpCfg.ChannelForConsume.QueueDeclare(
-		queueName,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Fatalf("Can't create a RabbitMQ queue: %v", err)
-		return nil, err
-	}
-	msgs, err := amqpCfg.ChannelForConsume.Consume(
-		queue.Name,
-		"",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Fatalf("Can't create a channel to consume messages from RabbitMQ: %v", err)
-		return nil, err
-	}
-	return &AMQPConsumer{
-		Queue:    queue,
-		Messages: msgs,
+		log:  log,
+		conn: conn,
 	}, nil
 }

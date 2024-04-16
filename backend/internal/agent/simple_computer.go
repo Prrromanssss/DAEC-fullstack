@@ -1,13 +1,17 @@
 package agent
 
-import "time"
+import (
+	"time"
+
+	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
+)
 
 func simpleComputer(
-	exprMsg *ExpressionMessage,
+	exprMsg *messages.ExpressionMessage,
 	digit1, digit2 int,
 	oper string,
 	timer *time.Timer,
-	res chan<- *ExpressionMessage,
+	res chan<- *messages.ExpressionMessage,
 ) {
 	switch {
 	case oper == "+":

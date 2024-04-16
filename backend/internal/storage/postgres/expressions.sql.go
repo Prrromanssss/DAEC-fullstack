@@ -7,13 +7,14 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
 const createExpression = `-- name: CreateExpression :one
 INSERT INTO expressions (created_at, updated_at, data, parse_data, status)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING expression_id, created_at, updated_at, data, parse_data, status, result, is_ready
+RETURNING expression_id, agent_id, created_at, updated_at, data, parse_data, status, result, is_ready
 `
 
 type CreateExpressionParams struct {
@@ -35,6 +36,7 @@ func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionPara
 	var i Expression
 	err := row.Scan(
 		&i.ExpressionID,
+		&i.AgentID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Data,
@@ -47,7 +49,7 @@ func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionPara
 }
 
 const getComputingExpressions = `-- name: GetComputingExpressions :many
-SELECT expression_id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
+SELECT expression_id, agent_id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
 WHERE status = 'computing'
 ORDER BY created_at DESC
 `
@@ -63,6 +65,7 @@ func (q *Queries) GetComputingExpressions(ctx context.Context) ([]Expression, er
 		var i Expression
 		if err := rows.Scan(
 			&i.ExpressionID,
+			&i.AgentID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Data,
@@ -85,7 +88,7 @@ func (q *Queries) GetComputingExpressions(ctx context.Context) ([]Expression, er
 }
 
 const getExpressionByID = `-- name: GetExpressionByID :one
-SELECT expression_id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
+SELECT expression_id, agent_id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
 WHERE expression_id = $1
 `
 
@@ -94,6 +97,7 @@ func (q *Queries) GetExpressionByID(ctx context.Context, expressionID int32) (Ex
 	var i Expression
 	err := row.Scan(
 		&i.ExpressionID,
+		&i.AgentID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Data,
@@ -106,7 +110,7 @@ func (q *Queries) GetExpressionByID(ctx context.Context, expressionID int32) (Ex
 }
 
 const getExpressions = `-- name: GetExpressions :many
-SELECT expression_id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
+SELECT expression_id, agent_id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
 ORDER BY created_at DESC
 `
 
@@ -121,6 +125,7 @@ func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {
 		var i Expression
 		if err := rows.Scan(
 			&i.ExpressionID,
+			&i.AgentID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Data,
@@ -162,6 +167,17 @@ func (q *Queries) MakeExpressionReady(ctx context.Context, arg MakeExpressionRea
 		arg.UpdatedAt,
 		arg.ExpressionID,
 	)
+	return err
+}
+
+const makeExpressionsTerminated = `-- name: MakeExpressionsTerminated :exec
+UPDATE expressions
+SET status = 'terminated'
+WHERE agent_id = $1
+`
+
+func (q *Queries) MakeExpressionsTerminated(ctx context.Context, agentID sql.NullInt32) error {
+	_, err := q.db.ExecContext(ctx, makeExpressionsTerminated, agentID)
 	return err
 }
 

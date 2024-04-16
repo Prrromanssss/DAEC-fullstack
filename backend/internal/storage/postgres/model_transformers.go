@@ -1,11 +1,13 @@
 package postgres
 
 import (
+	"database/sql"
 	"time"
 )
 
 type ExpressionTransformed struct {
 	ExpressionID int32            `json:"expression_id"`
+	AgentID      sql.NullInt32    `json:"agent_id"`
 	CreatedAt    time.Time        `json:"created_at"`
 	UpdatedAt    time.Time        `json:"updated_at"`
 	Data         string           `json:"data"`
@@ -51,6 +53,7 @@ type AgentTransformed struct {
 	LastPing                     time.Time   `json:"last_ping"`
 	Status                       AgentStatus `json:"status"`
 	CreatedAt                    time.Time   `json:"created_at"`
+	NumberOfActiveCalculations   int32       `json:"number_of_active_calculations"`
 }
 
 func DatabaseAgentToAgent(dbAgent Agent) AgentTransformed {
