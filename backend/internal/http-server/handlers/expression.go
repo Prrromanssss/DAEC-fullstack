@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	agentagregator "github.com/Prrromanssss/DAEE-fullstack/internal/agent_agregator"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/brokers"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator"
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator/parser"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
@@ -19,7 +20,8 @@ import (
 func HandlerCreateExpression(
 	log *slog.Logger,
 	dbCfg *storage.Storage,
-	agentAgr *agentagregator.AgentAgregator,
+	orc *orchestrator.Orchestrator,
+	producer brokers.Producer,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const fn = "handlers.HandlerCreateExpression"
@@ -59,12 +61,12 @@ func HandlerCreateExpression(
 			return
 		}
 
-		msgToQueue := messages.MessageFromOrchestrator{
+		msgToQueue := messages.ExpressionMessage{
 			ExpressionID: expression.ExpressionID,
 			Expression:   parseData,
 		}
 
-		agentAgr.AddTask(msgToQueue)
+		orc.AddTask(msgToQueue, producer)
 
 		log.Info("send message from orchestrator to agent agregator")
 
