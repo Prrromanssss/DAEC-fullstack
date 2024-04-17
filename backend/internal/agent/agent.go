@@ -50,6 +50,18 @@ func NewAgent(
 	}, nil
 }
 
+// DeletePreviousAgents deletes previous agents when the application is restarted.
+func (a *Agent) DeletePreviousAgents(ctx context.Context) error {
+	err := a.dbConfig.DB.DeleteAgents(ctx)
+	if err != nil {
+		a.log.Error("can't delete previous agents", sl.Err(err))
+
+		return err
+	}
+
+	return nil
+}
+
 // GetSafelyNumberOfActiveCalculations gets NumberOfActiveCalculations with Lock.
 func (a *Agent) GetSafelyNumberOfActiveCalculations() int32 {
 	a.mu.Lock()
@@ -266,25 +278,25 @@ func (a *Agent) ConsumeMessageFromComputers(ctx context.Context, result *message
 	}
 }
 
-// ConsumeMessageFromAgentAgregator hanldes message from Consumer.
-func (a *Agent) ConsumeMessageFromAgentAgregator(ctx context.Context, msgFromAgentAgregator amqp.Delivery) {
-	const fn = "agent.ConsumeMessageFromAgentAgregator"
+// ConsumeMessageFromOrchestrator hanldes message from Consumer.
+func (a *Agent) ConsumeMessageFromOrchestrator(ctx context.Context, msgFromOrchestrator amqp.Delivery) {
+	const fn = "agent.ConsumeMessageFromOrchestrator"
 
 	log := a.log.With(
 		slog.String("fn", fn),
 	)
 
-	log.Info("agent consumes msg from agent agregator", slog.String("message", string(msgFromAgentAgregator.Body)))
+	log.Info("agent consumes msg from agent agregator", slog.String("message", string(msgFromOrchestrator.Body)))
 
 	var exprMsg messages.ExpressionMessage
-	if err := json.Unmarshal(msgFromAgentAgregator.Body, &exprMsg); err != nil {
+	if err := json.Unmarshal(msgFromOrchestrator.Body, &exprMsg); err != nil {
 		log.Error("agent error: failed to parse JSON", sl.Err(err))
 		a.kill()
 		return
 	}
 
 	if a.GetSafelyNumberOfActiveCalculations() >= a.GetSafelyNumberOfParallelCalculations() {
-		err := msgFromAgentAgregator.Nack(false, true)
+		err := msgFromOrchestrator.Nack(false, true)
 		if err != nil {
 			log.Error("agent error", sl.Err(err))
 			a.kill()
@@ -293,7 +305,7 @@ func (a *Agent) ConsumeMessageFromAgentAgregator(ctx context.Context, msgFromAge
 		return
 	}
 
-	err := msgFromAgentAgregator.Ack(false)
+	err := msgFromOrchestrator.Ack(false)
 	if err != nil {
 		log.Error("agent error: error acknowledging message", sl.Err(err))
 		a.kill()
