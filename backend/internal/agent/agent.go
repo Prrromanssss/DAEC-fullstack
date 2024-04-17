@@ -286,7 +286,7 @@ func (a *Agent) ConsumeMessageFromOrchestrator(ctx context.Context, msgFromOrche
 		slog.String("fn", fn),
 	)
 
-	log.Info("agent consumes msg from agent agregator", slog.String("message", string(msgFromOrchestrator.Body)))
+	log.Info("agent consumes msg from orchestrator", slog.String("message", string(msgFromOrchestrator.Body)))
 
 	var exprMsg messages.ExpressionMessage
 	if err := json.Unmarshal(msgFromOrchestrator.Body, &exprMsg); err != nil {
