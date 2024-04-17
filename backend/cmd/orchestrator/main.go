@@ -12,7 +12,6 @@ import (
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/handlers"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/middleware"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/handlers/slogpretty"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/logcleaner"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
@@ -43,9 +42,11 @@ func main() {
 
 	go logcleaner.CleanLog(10*time.Minute, cfg.LogPath, 100)
 
+	// Configuration storage
+
 	dbCfg := storage.NewStorage(cfg.StorageURL)
 
-	// agentAgregator
+	// Configuration AgentAgregator
 	agentAgr, err := agentagregatorservice.RunAgentAgregator(log, cfg, dbCfg)
 	if err != nil {
 		log.Error("can't make agent agregator", sl.Err(err))
@@ -81,17 +82,18 @@ func main() {
 
 	v1Router := chi.NewRouter()
 
-	v1Router.Post("/expressions", middleware.MiddlewareAgentAgregatorAndDBConfig(
-		handlers.HandlerCreateExpression,
-		dbCfg,
-		agentAgr,
-	))
-	v1Router.Get("/expressions", middleware.MiddlewareApiConfig(handlers.HandlerGetExpressions, dbCfg))
+	// TODO: Get rid of agentAgr in endpoint!!!!!!!!
 
-	v1Router.Get("/operations", middleware.MiddlewareApiConfig(handlers.HandlerGetOperations, dbCfg))
-	v1Router.Patch("/operations", middleware.MiddlewareApiConfig(handlers.HandlerUpdateOperation, dbCfg))
+	// Expression endpoints
+	v1Router.Post("/expressions", handlers.HandlerCreateExpression(log, dbCfg, agentAgr)) // <<<<-----
+	v1Router.Get("/expressions", handlers.HandlerGetExpressions(log, dbCfg))
 
-	v1Router.Get("/agents", middleware.MiddlewareApiConfig(handlers.HandlerGetAgents, dbCfg))
+	// Opeartsion endpoints
+	v1Router.Get("/operations", handlers.HandlerGetOperations(log, dbCfg))
+	v1Router.Patch("/operations", handlers.HandlerUpdateOperation(log, dbCfg))
+
+	// Agent endpoints
+	v1Router.Get("/agents", handlers.HandlerGetAgents(log, dbCfg))
 
 	router.Mount("/v1", v1Router)
 
@@ -104,8 +106,7 @@ func main() {
 	}
 
 	log.Info("server starting", slog.String("host", cfg.Address))
-	err = srv.ListenAndServe()
-	if err != nil {
+	if err = srv.ListenAndServe(); err != nil {
 		log.Error("failed to start server ", sl.Err(err))
 	}
 

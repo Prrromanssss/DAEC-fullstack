@@ -2,36 +2,44 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
+
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 )
 
-func respondWithError(w http.ResponseWriter, code int, msg string) {
+// The respondWithError function is designed to handle HTTP responses that indicate an error condition.
+func respondWithError(log *slog.Logger, w http.ResponseWriter, code int, msg string) {
 	if code > 499 {
-		log.Println("Responding with 5XX error:", msg)
+		log.Warn("responding with 5XX error", slog.Int("code", code))
 	}
 	type errResponse struct {
 		Error string `json:"error"`
 	}
 
-	respondWithJson(w, code, errResponse{
+	respondWithJson(log, w, code, errResponse{
 		Error: msg,
 	})
 }
 
-func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
+// The respondWithJson function is a utility function designed to send HTTP responses with JSON content
+func respondWithJson(log *slog.Logger, w http.ResponseWriter, code int, payload interface{}) {
 	data, err := json.Marshal(payload)
 	if err != nil {
-		log.Printf("Failed to marshal JSON response: %v\n", payload)
+		log.Error("failed to marshal JSON response", sl.Err(err), slog.Any("payload", payload))
 		w.WriteHeader(500)
+
 		return
 	}
+
 	w.Header().Add("Content-Type", "application/json")
+
 	w.WriteHeader(code)
 	_, err = w.Write(data)
 	if err != nil {
-		log.Printf("Failed to write data: %v\n", payload)
+		log.Error("failed to write data", sl.Err(err), slog.Any("payload", payload))
 		w.WriteHeader(500)
+
 		return
 	}
 }
