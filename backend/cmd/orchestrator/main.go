@@ -4,9 +4,13 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	orchestratorapp "github.com/Prrromanssss/DAEE-fullstack/internal/app/orchestrator"
+	daeev1 "github.com/Prrromanssss/DAEE-fullstack/internal/protos/gen/go/daee"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/handlers"
@@ -50,6 +54,21 @@ func main() {
 
 	go application.MustRun(ctxWithCancel)
 
+	// Configuration gRPC Client
+	conn, err := grpc.Dial(
+		cfg.Address,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Error("could not connect to grpc server", sl.Err(err))
+		os.Exit(1)
+	}
+	defer conn.Close()
+
+	log.Info("succesfully connect to gRPC server")
+
+	grpcClient := daeev1.NewAuthClient(conn)
+
 	// Configuration HTTP-Server
 	router := chi.NewRouter()
 
@@ -82,6 +101,10 @@ func main() {
 
 	// Agent endpoints
 	v1Router.Get("/agents", handlers.HandlerGetAgents(log, dbCfg))
+
+	// User endpoints
+	v1Router.Post("/login", handlers.HandlerLoginUser(log, dbCfg, grpcClient))
+	v1Router.Post("/register", handlers.HandlerRegisterNewUser(log, dbCfg, grpcClient))
 
 	router.Mount("/v1", v1Router)
 
