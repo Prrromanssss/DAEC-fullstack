@@ -95,8 +95,8 @@ func (a *App) Run(ctx context.Context) error {
 	}
 
 	go func() {
-		for msgFromAgentAgregator := range a.Consumer.GetMessages() {
-			go a.AgentApp.ConsumeMessageFromOrchestrator(ctx, msgFromAgentAgregator)
+		for msgFromOrchestrator := range a.Consumer.GetMessages() {
+			go a.AgentApp.ConsumeMessageFromOrchestrator(ctx, msgFromOrchestrator)
 		}
 	}()
 
