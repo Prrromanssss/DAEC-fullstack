@@ -85,6 +85,7 @@ func main() {
 
 	v1Router.Use(middleware.RequestID)
 	v1Router.Use(mwlogger.New(log))
+	v1Router.Use(middleware.URLFormat)
 
 	// Expression endpoints
 	v1Router.Post("/expressions", handlers.HandlerCreateExpression(
