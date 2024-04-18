@@ -12,9 +12,14 @@ import (
 )
 
 const createExpression = `-- name: CreateExpression :one
-INSERT INTO expressions (created_at, updated_at, data, parse_data, status)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING expression_id, agent_id, created_at, updated_at, data, parse_data, status, result, is_ready
+INSERT INTO expressions
+    (created_at, updated_at, data, parse_data, status, user_id)
+VALUES
+    ($1, $2, $3, $4, $5, $6)
+RETURNING
+    expression_id, user_id, agent_id,
+    created_at, updated_at, data, parse_data,
+    status, result, is_ready
 `
 
 type CreateExpressionParams struct {
@@ -23,6 +28,7 @@ type CreateExpressionParams struct {
 	Data      string
 	ParseData string
 	Status    ExpressionStatus
+	UserID    int32
 }
 
 func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionParams) (Expression, error) {
@@ -32,10 +38,12 @@ func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionPara
 		arg.Data,
 		arg.ParseData,
 		arg.Status,
+		arg.UserID,
 	)
 	var i Expression
 	err := row.Scan(
 		&i.ExpressionID,
+		&i.UserID,
 		&i.AgentID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -49,7 +57,11 @@ func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionPara
 }
 
 const getComputingExpressions = `-- name: GetComputingExpressions :many
-SELECT expression_id, agent_id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
+SELECT
+    expression_id, user_id, agent_id,
+    created_at, updated_at, data, parse_data,
+    status, result, is_ready
+FROM expressions
 WHERE status = 'computing'
 ORDER BY created_at DESC
 `
@@ -65,6 +77,7 @@ func (q *Queries) GetComputingExpressions(ctx context.Context) ([]Expression, er
 		var i Expression
 		if err := rows.Scan(
 			&i.ExpressionID,
+			&i.UserID,
 			&i.AgentID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -88,7 +101,11 @@ func (q *Queries) GetComputingExpressions(ctx context.Context) ([]Expression, er
 }
 
 const getExpressionByID = `-- name: GetExpressionByID :one
-SELECT expression_id, agent_id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
+SELECT
+    expression_id, user_id, agent_id,
+    created_at, updated_at, data, parse_data,
+    status, result, is_ready
+FROM expressions
 WHERE expression_id = $1
 `
 
@@ -97,6 +114,7 @@ func (q *Queries) GetExpressionByID(ctx context.Context, expressionID int32) (Ex
 	var i Expression
 	err := row.Scan(
 		&i.ExpressionID,
+		&i.UserID,
 		&i.AgentID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -110,7 +128,11 @@ func (q *Queries) GetExpressionByID(ctx context.Context, expressionID int32) (Ex
 }
 
 const getExpressions = `-- name: GetExpressions :many
-SELECT expression_id, agent_id, created_at, updated_at, data, parse_data, status, result, is_ready FROM expressions
+SELECT
+    expression_id, user_id, agent_id,
+    created_at, updated_at, data, parse_data,
+    status, result, is_ready
+FROM expressions
 ORDER BY created_at DESC
 `
 
@@ -125,6 +147,7 @@ func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {
 		var i Expression
 		if err := rows.Scan(
 			&i.ExpressionID,
+			&i.UserID,
 			&i.AgentID,
 			&i.CreatedAt,
 			&i.UpdatedAt,

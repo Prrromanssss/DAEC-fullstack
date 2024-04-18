@@ -7,6 +7,7 @@ import (
 
 type ExpressionTransformed struct {
 	ExpressionID int32            `json:"expression_id"`
+	UserID       int32            `json:"user_id"`
 	AgentID      sql.NullInt32    `json:"agent_id"`
 	CreatedAt    time.Time        `json:"created_at"`
 	UpdatedAt    time.Time        `json:"updated_at"`
@@ -66,4 +67,22 @@ func DatabaseAgentsToAgents(dbAgents []Agent) []AgentTransformed {
 		agents = append(agents, DatabaseAgentToAgent(dbAgent))
 	}
 	return agents
+}
+
+type UserTransformed struct {
+	UserID       int32  `json:"user_id"`
+	Email        string `json:"email"`
+	PasswordHash []byte `json:"password_hash"`
+}
+
+func DatabaseUserToUser(dbUser User) UserTransformed {
+	return UserTransformed(dbUser)
+}
+
+func DatabaseUsersToUsers(dbUsers []User) []UserTransformed {
+	users := []UserTransformed{}
+	for _, dbUser := range dbUsers {
+		users = append(users, DatabaseUserToUser(dbUser))
+	}
+	return users
 }

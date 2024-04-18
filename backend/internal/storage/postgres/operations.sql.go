@@ -12,7 +12,8 @@ import (
 const createOperation = `-- name: CreateOperation :exec
 INSERT INTO operations (operation_type, execution_time)
 VALUES ($1, $2)
-RETURNING operation_id, operation_type, execution_time
+RETURNING
+    operation_id, operation_type, execution_time
 `
 
 type CreateOperationParams struct {
@@ -26,7 +27,9 @@ func (q *Queries) CreateOperation(ctx context.Context, arg CreateOperationParams
 }
 
 const getOperationByType = `-- name: GetOperationByType :one
-SELECT operation_id, operation_type, execution_time FROM operations
+SELECT
+    operation_id, operation_type, execution_time
+FROM operations
 WHERE operation_type = $1
 `
 
@@ -50,7 +53,9 @@ func (q *Queries) GetOperationTimeByType(ctx context.Context, operationType stri
 }
 
 const getOperations = `-- name: GetOperations :many
-SELECT operation_id, operation_type, execution_time FROM operations
+SELECT
+    operation_id, operation_type, execution_time
+FROM operations
 ORDER BY operation_type DESC
 `
 

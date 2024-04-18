@@ -2,10 +2,17 @@ package storage
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
 	_ "github.com/lib/pq"
+)
+
+var (
+	ErrUserExists   = errors.New("user already exists")
+	ErrUserNotFound = errors.New("user not found")
+	ErrAppNotFound  = errors.New("app not found")
 )
 
 type Storage struct {

@@ -1,14 +1,27 @@
 -- name: CreateExpression :one
-INSERT INTO expressions (created_at, updated_at, data, parse_data, status)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING *;
+INSERT INTO expressions
+    (created_at, updated_at, data, parse_data, status, user_id)
+VALUES
+    ($1, $2, $3, $4, $5, $6)
+RETURNING
+    expression_id, user_id, agent_id,
+    created_at, updated_at, data, parse_data,
+    status, result, is_ready;
 
 -- name: GetExpressions :many
-SELECT * FROM expressions
+SELECT
+    expression_id, user_id, agent_id,
+    created_at, updated_at, data, parse_data,
+    status, result, is_ready
+FROM expressions
 ORDER BY created_at DESC;
 
 -- name: GetExpressionByID :one
-SELECT * FROM expressions
+SELECT
+    expression_id, user_id, agent_id,
+    created_at, updated_at, data, parse_data,
+    status, result, is_ready
+FROM expressions
 WHERE expression_id = $1;
 
 -- name: UpdateExpressionData :exec
@@ -32,7 +45,11 @@ SET status = $1
 WHERE expression_id = $2;
 
 -- name: GetComputingExpressions :many
-SELECT * FROM expressions
+SELECT
+    expression_id, user_id, agent_id,
+    created_at, updated_at, data, parse_data,
+    status, result, is_ready
+FROM expressions
 WHERE status = 'computing'
 ORDER BY created_at DESC;
 

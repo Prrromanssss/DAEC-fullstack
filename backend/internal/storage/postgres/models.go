@@ -58,7 +58,7 @@ func (ns NullAgentStatus) Value() (driver.Value, error) {
 type ExpressionStatus string
 
 const (
-	ExpressionStatusReadyforcomputation ExpressionStatus = "ready for computation"
+	ExpressionStatusReadyForComputation ExpressionStatus = "ready_for_computation"
 	ExpressionStatusComputing           ExpressionStatus = "computing"
 	ExpressionStatusResult              ExpressionStatus = "result"
 	ExpressionStatusTerminated          ExpressionStatus = "terminated"
@@ -110,6 +110,7 @@ type Agent struct {
 
 type Expression struct {
 	ExpressionID int32
+	UserID       int32
 	AgentID      sql.NullInt32
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
@@ -124,4 +125,10 @@ type Operation struct {
 	OperationID   int32
 	OperationType string
 	ExecutionTime int32
+}
+
+type User struct {
+	UserID       int32
+	Email        string
+	PasswordHash []byte
 }

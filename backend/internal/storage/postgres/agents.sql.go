@@ -11,9 +11,14 @@ import (
 )
 
 const createAgent = `-- name: CreateAgent :one
-INSERT INTO agents (created_at, number_of_parallel_calculations, last_ping, status)
-VALUES ($1, $2, $3, $4)
-RETURNING agent_id, number_of_parallel_calculations, last_ping, status, created_at, number_of_active_calculations
+INSERT INTO agents
+    (created_at, number_of_parallel_calculations, last_ping, status)
+VALUES
+    ($1, $2, $3, $4)
+RETURNING
+    agent_id, number_of_parallel_calculations,
+    last_ping, status, created_at,
+    number_of_active_calculations
 `
 
 type CreateAgentParams struct {
@@ -63,7 +68,8 @@ func (q *Queries) DeleteAgents(ctx context.Context) error {
 }
 
 const getAgentByID = `-- name: GetAgentByID :one
-SELECT agent_id, number_of_parallel_calculations, last_ping, status, created_at, number_of_active_calculations FROM agents
+SELECT agent_id, number_of_parallel_calculations, last_ping, status, created_at, number_of_active_calculations
+FROM agents
 WHERE agent_id = $1
 `
 
@@ -82,7 +88,11 @@ func (q *Queries) GetAgentByID(ctx context.Context, agentID int32) (Agent, error
 }
 
 const getAgents = `-- name: GetAgents :many
-SELECT agent_id, number_of_parallel_calculations, last_ping, status, created_at, number_of_active_calculations FROM agents
+SELECT
+    agent_id, number_of_parallel_calculations,
+    last_ping, status, created_at,
+    number_of_active_calculations
+FROM agents
 ORDER BY created_at DESC
 `
 

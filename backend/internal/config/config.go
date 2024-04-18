@@ -38,8 +38,9 @@ type DatabaseInstance struct {
 func MustLoad() *Config {
 	err := godotenv.Load("local.env")
 	if err != nil {
-		log.Fatalf("Can't parse env file: %v", err)
+		log.Fatalf("can't parse env file: %v", err)
 	}
+
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
 		log.Fatal("CONFIG_PATH is not set")
