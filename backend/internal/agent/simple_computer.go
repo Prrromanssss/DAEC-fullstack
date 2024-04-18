@@ -6,6 +6,7 @@ import (
 	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
 )
 
+// simpleComputer calculates a simple expression consisting of 2 operands.
 func simpleComputer(
 	exprMsg *messages.ExpressionMessage,
 	digit1, digit2 int,

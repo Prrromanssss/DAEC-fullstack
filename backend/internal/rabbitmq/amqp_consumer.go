@@ -15,7 +15,12 @@ type AMQPConsumer struct {
 	Messages <-chan amqp.Delivery
 }
 
-func NewAMQPConsumer(log *slog.Logger, amqpCfg *AMQPConfig, queueName string) (*AMQPConsumer, error) {
+// NewAMQPConsumer creates new Consumer for AMQP protocol.
+func NewAMQPConsumer(
+	log *slog.Logger,
+	amqpCfg *AMQPConfig,
+	queueName string,
+) (*AMQPConsumer, error) {
 	chCons, err := amqpCfg.conn.Channel()
 	if err != nil {
 		log.Error("can't create a channel from RabbitMQ", sl.Err(err))
@@ -55,10 +60,12 @@ func NewAMQPConsumer(log *slog.Logger, amqpCfg *AMQPConfig, queueName string) (*
 	}, nil
 }
 
+// GetMessages returns messages from the Consumer channel.
 func (ac *AMQPConsumer) GetMessages() <-chan amqp.Delivery {
 	return ac.Messages
 }
 
+// Close closes Consumer channel.
 func (ac *AMQPConsumer) Close() {
 	ac.channel.Close()
 }

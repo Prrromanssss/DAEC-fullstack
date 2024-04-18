@@ -17,6 +17,7 @@ type AMQPProducer struct {
 	channel *amqp.Channel
 }
 
+// NewAMQPProducer creates new Producer for AMQP protocol.
 func NewAMQPProducer(log *slog.Logger, amqpCfg *AMQPConfig, queueName string) (*AMQPProducer, error) {
 	chProd, err := amqpCfg.conn.Channel()
 	if err != nil {
@@ -45,6 +46,7 @@ func NewAMQPProducer(log *slog.Logger, amqpCfg *AMQPConfig, queueName string) (*
 	}, nil
 }
 
+// PublishExpressionMessage publishes messages to queue.
 func (ap *AMQPProducer) PublishExpressionMessage(msg *messages.ExpressionMessage) error {
 	jsonData, err := json.Marshal(msg)
 	if err != nil {
@@ -71,12 +73,14 @@ func (ap *AMQPProducer) PublishExpressionMessage(msg *messages.ExpressionMessage
 	return nil
 }
 
+// Reconnect reconnects to AMQP instance.
 func (ap *AMQPProducer) Reconnect() (*AMQPProducer, error) {
 	ap.Close()
 
 	return NewAMQPProducer(ap.log, ap.amqpCfg, ap.Queue.Name)
 }
 
+// Close closes Producer channel.
 func (ap *AMQPProducer) Close() {
 	ap.channel.Close()
 }

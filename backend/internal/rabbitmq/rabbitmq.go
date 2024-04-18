@@ -12,6 +12,7 @@ type AMQPConfig struct {
 	conn *amqp.Connection
 }
 
+// NewAMQPConfig creates new AMQP connection.
 func NewAMQPConfig(log *slog.Logger, amqpUrl string) (*AMQPConfig, error) {
 	conn, err := amqp.Dial(amqpUrl)
 	if err != nil {
@@ -27,6 +28,7 @@ func NewAMQPConfig(log *slog.Logger, amqpUrl string) (*AMQPConfig, error) {
 	}, nil
 }
 
+// Close closes AMQP connection.
 func (ac *AMQPConfig) Close() {
 	ac.conn.Close()
 }

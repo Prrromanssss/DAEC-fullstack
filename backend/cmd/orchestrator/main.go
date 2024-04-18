@@ -10,12 +10,14 @@ import (
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/handlers"
+	mwlogger "github.com/Prrromanssss/DAEE-fullstack/internal/http-server/middleware/logger"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/logcleaner"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/setup"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 )
 
@@ -61,6 +63,9 @@ func main() {
 	}))
 
 	v1Router := chi.NewRouter()
+
+	v1Router.Use(middleware.RequestID)
+	v1Router.Use(mwlogger.New(log))
 
 	// Expression endpoints
 	v1Router.Post("/expressions", handlers.HandlerCreateExpression(

@@ -1,4 +1,4 @@
-package logger
+package mwlogger
 
 import (
 	"net/http"
@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+// New creates http.Handler with logging of all actions.
 func New(log *slog.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		log := log.With(

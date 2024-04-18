@@ -12,6 +12,7 @@ type Storage struct {
 	DB *postgres.Queries
 }
 
+// NewStorage creates new Storage.
 func NewStorage(dbURL string) *Storage {
 	conn, err := sql.Open("postgres", dbURL)
 

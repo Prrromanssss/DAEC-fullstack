@@ -87,6 +87,7 @@ func (a *App) Run(ctx context.Context) error {
 		slog.String("fn", fn),
 	)
 
+	// Reload not completed expressions.
 	err := a.OrchestratorApp.ReloadComputingExpressions(ctx, a.Producer)
 	if err != nil {
 		log.Error("can't reload computing expressions", sl.Err(err))
