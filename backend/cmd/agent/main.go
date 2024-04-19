@@ -39,5 +39,5 @@ func main() {
 		panic(err)
 	}
 
-	go application.MustRun(ctxWithCancel)
+	application.MustRun(ctxWithCancel)
 }

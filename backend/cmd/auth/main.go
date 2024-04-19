@@ -18,7 +18,7 @@ func main() {
 	cfg := config.MustLoad()
 
 	// Configuration Logger
-	log := setup.SetupLogger(cfg.Env, cfg.LogPathAgent)
+	log := setup.SetupLogger(cfg.Env, cfg.LogPathAuth)
 	log.Info(
 		"start grpc server",
 		slog.String("env", cfg.Env),
@@ -31,7 +31,7 @@ func main() {
 
 	authService := auth.New(log, dbCfg, dbCfg, cfg.TokenTTL)
 
-	grpcApp := grpcapp.New(log, authService, cfg.GRPCServer.Port)
+	grpcApp := grpcapp.New(log, authService, cfg.GRPCServer.Address)
 
 	go grpcApp.MustRun()
 

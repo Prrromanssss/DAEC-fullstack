@@ -1,8 +1,10 @@
 package jwt
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
@@ -10,8 +12,14 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// NewToken creates new JWT token.
 func NewToken(user postgres.User, duration time.Duration) (string, error) {
-	err := godotenv.Load("local.env")
+	path, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("can't get pwd: %v", err)
+	}
+
+	err = godotenv.Load(fmt.Sprintf("%s/local.env", filepath.Dir(filepath.Dir(filepath.Dir(path)))))
 	if err != nil {
 		log.Fatalf("can't parse env file: %v", err)
 	}

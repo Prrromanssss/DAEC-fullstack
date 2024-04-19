@@ -59,7 +59,7 @@ func (q *Queries) DecrementNumberOfActiveCalculations(ctx context.Context, agent
 }
 
 const deleteAgents = `-- name: DeleteAgents :exec
-TRUNCATE agents RESTART IDENTITY
+DELETE FROM agents
 `
 
 func (q *Queries) DeleteAgents(ctx context.Context) error {

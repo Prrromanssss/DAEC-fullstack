@@ -35,7 +35,7 @@ SET status = $1
 WHERE agent_id = $2;
 
 -- name: DeleteAgents :exec
-TRUNCATE agents RESTART IDENTITY;
+DELETE FROM agents;
 
 -- name: DecrementNumberOfActiveCalculations :exec
 UPDATE agents

@@ -12,7 +12,7 @@ import (
 type App struct {
 	log        *slog.Logger
 	gRPCServer *grpc.Server
-	port       int
+	address    string
 }
 
 // MustRun runs gRPC server and panics if any error occurs.
@@ -26,7 +26,7 @@ func (a *App) MustRun() {
 func New(
 	log *slog.Logger,
 	authService authgrpc.Auth,
-	port int,
+	address string,
 ) *App {
 	gRPCServer := grpc.NewServer()
 
@@ -35,7 +35,7 @@ func New(
 	return &App{
 		log:        log,
 		gRPCServer: gRPCServer,
-		port:       port,
+		address:    address,
 	}
 }
 
@@ -44,10 +44,10 @@ func (a *App) Run() error {
 
 	log := a.log.With(
 		slog.String("op", op),
-		slog.Int("port", a.port),
+		slog.String("address", a.address),
 	)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
+	lis, err := net.Listen("tcp", a.address)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -64,7 +64,7 @@ func (a *App) Stop() {
 	const op = "grpcapp.Stop"
 
 	a.log.With(slog.String("op", op)).
-		Info("stopping gRPC server", slog.Int("port", a.port))
+		Info("stopping gRPC server")
 
 	a.gRPCServer.GracefulStop()
 }

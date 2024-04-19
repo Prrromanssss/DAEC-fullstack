@@ -56,7 +56,7 @@ func main() {
 
 	// Configuration gRPC Client
 	conn, err := grpc.Dial(
-		cfg.Address,
+		cfg.GRPCServer.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -111,13 +111,13 @@ func main() {
 
 	srv := &http.Server{
 		Handler:      router,
-		Addr:         cfg.Address,
+		Addr:         cfg.HTTPServer.Address,
 		ReadTimeout:  cfg.Timeout,
 		WriteTimeout: cfg.Timeout,
 		IdleTimeout:  cfg.IdleTimeout,
 	}
 
-	log.Info("server starting", slog.String("host", cfg.Address))
+	log.Info("server starting", slog.String("host", cfg.HTTPServer.Address))
 	if err = srv.ListenAndServe(); err != nil {
 		log.Error("failed to start server ", sl.Err(err))
 	}

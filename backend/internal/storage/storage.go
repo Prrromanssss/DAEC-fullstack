@@ -26,12 +26,12 @@ func NewStorage(dbURL string) *Storage {
 	conn, err := sql.Open("postgres", dbURL)
 
 	if err != nil {
-		log.Fatal("Can't connect to database:", err)
+		log.Fatal("can't connect to database:", err)
 	}
 
 	db := postgres.New(conn)
 
-	log.Println("Successfully connected to DB instance")
+	log.Println("successfully connected to DB instance")
 
 	return &Storage{
 		Queries: db,
