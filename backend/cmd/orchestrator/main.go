@@ -44,7 +44,7 @@ func main() {
 	go logcleaner.CleanLog(10*time.Minute, cfg.LogPathOrchestrator, 100)
 
 	// Configuration Storage
-	dbCfg := storage.NewStorage(cfg.StorageURL)
+	dbCfg := storage.NewStorage(log, cfg.StorageURL)
 
 	// Configuration Orchestrator
 	application, err := orchestratorapp.New(log, cfg, dbCfg, cancel)

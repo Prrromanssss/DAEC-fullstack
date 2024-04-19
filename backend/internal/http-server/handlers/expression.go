@@ -56,6 +56,7 @@ func HandlerCreateExpression(
 				Data:      params.Data,
 				ParseData: parseData,
 				Status:    "ready_for_computation",
+				UserID:    1, // TODO: UserID !!!
 			})
 		if err != nil {
 			respondWithError(log, w, 400, fmt.Sprintf("can't create expression: %v", err))
@@ -69,7 +70,7 @@ func HandlerCreateExpression(
 
 		orc.AddTask(msgToQueue, producer)
 
-		log.Info("send message from orchestrator to agent agregator")
+		log.Info("send message to orchestrator")
 
 		respondWithJson(log, w, 201, postgres.DatabaseExpressionToExpression(expression))
 	}

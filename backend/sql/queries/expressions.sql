@@ -66,3 +66,8 @@ SELECT
 FROM expressions
 WHERE status = 'terminated'
 ORDER BY created_at DESC;
+
+-- name: AssignExpressionToAgent :exec
+UPDATE expressions
+SET agent_id = $1
+WHERE expression_id = $2;

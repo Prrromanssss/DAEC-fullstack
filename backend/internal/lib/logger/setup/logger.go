@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"io"
 	"log/slog"
 	"os"
 )
@@ -20,18 +21,20 @@ func SetupLogger(env, logPath string) *slog.Logger {
 	}
 	defer logFile.Close()
 
+	writer := io.Writer(logFile)
+
 	switch env {
 	case envLocal:
-		log = SetupPrettySlog(logFile)
+		log = SetupPrettySlog(writer)
 	case envDev:
 		log = slog.New(
-			slog.NewJSONHandler(logFile, &slog.HandlerOptions{
+			slog.NewJSONHandler(writer, &slog.HandlerOptions{
 				Level: slog.LevelDebug,
 			}),
 		)
 	case envProd:
 		log = slog.New(
-			slog.NewJSONHandler(logFile, &slog.HandlerOptions{
+			slog.NewJSONHandler(writer, &slog.HandlerOptions{
 				Level: slog.LevelInfo,
 			}),
 		)

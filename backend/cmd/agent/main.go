@@ -31,7 +31,7 @@ func main() {
 	go logcleaner.CleanLog(10*time.Minute, cfg.LogPathAgent, 100)
 
 	// Configuration Storage
-	dbCfg := storage.NewStorage(cfg.StorageURL)
+	dbCfg := storage.NewStorage(log, cfg.StorageURL)
 
 	// Configuration Agent
 	application, err := agentapp.New(log, cfg, dbCfg, cancel)

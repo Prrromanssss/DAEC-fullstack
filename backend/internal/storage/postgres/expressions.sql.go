@@ -11,6 +11,22 @@ import (
 	"time"
 )
 
+const assignExpressionToAgent = `-- name: AssignExpressionToAgent :exec
+UPDATE expressions
+SET agent_id = $1
+WHERE expression_id = $2
+`
+
+type AssignExpressionToAgentParams struct {
+	AgentID      sql.NullInt32
+	ExpressionID int32
+}
+
+func (q *Queries) AssignExpressionToAgent(ctx context.Context, arg AssignExpressionToAgentParams) error {
+	_, err := q.db.ExecContext(ctx, assignExpressionToAgent, arg.AgentID, arg.ExpressionID)
+	return err
+}
+
 const createExpression = `-- name: CreateExpression :one
 INSERT INTO expressions
     (created_at, updated_at, data, parse_data, status, user_id)

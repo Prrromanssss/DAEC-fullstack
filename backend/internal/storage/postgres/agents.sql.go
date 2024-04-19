@@ -143,12 +143,12 @@ func (q *Queries) IncrementNumberOfActiveCalculations(ctx context.Context, agent
 const terminateAgents = `-- name: TerminateAgents :many
 UPDATE agents
 SET status = 'terminated'
-WHERE EXTRACT(EPOCH FROM NOW()::timestamp - agents.last_ping) > $1
+WHERE EXTRACT(SECOND FROM NOW()::timestamp - agents.last_ping) > $1::numeric
 RETURNING agent_id
 `
 
-func (q *Queries) TerminateAgents(ctx context.Context, lastPing time.Time) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, terminateAgents, lastPing)
+func (q *Queries) TerminateAgents(ctx context.Context, dollar_1 string) ([]int32, error) {
+	rows, err := q.db.QueryContext(ctx, terminateAgents, dollar_1)
 	if err != nil {
 		return nil, err
 	}

@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
+	"log/slog"
+	"os"
 
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
 	_ "github.com/lib/pq"
 )
@@ -22,16 +24,23 @@ type Storage struct {
 }
 
 // NewStorage creates new Storage.
-func NewStorage(dbURL string) *Storage {
+func NewStorage(log *slog.Logger, dbURL string) *Storage {
+	const fn = "storage.NewStorage"
+
+	log = log.With(
+		slog.String("fn", fn),
+	)
+
 	conn, err := sql.Open("postgres", dbURL)
 
 	if err != nil {
-		log.Fatal("can't connect to database:", err)
+		log.Error("can't connect to database:", sl.Err(err))
+		os.Exit(1)
 	}
 
 	db := postgres.New(conn)
 
-	log.Println("successfully connected to DB instance")
+	log.Info("successfully connected to DB instance")
 
 	return &Storage{
 		Queries: db,

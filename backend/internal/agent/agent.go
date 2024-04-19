@@ -34,9 +34,24 @@ type Agent struct {
 func NewAgent(
 	log *slog.Logger,
 	dbCfg *storage.Storage,
-	agentObj postgres.Agent,
 	kill context.CancelFunc,
 ) (*Agent, error) {
+	const fn = "agent.NewAgent"
+
+	agentObj, err := dbCfg.Queries.CreateAgent(context.Background(), postgres.CreateAgentParams{
+		CreatedAt:                    time.Now().UTC(),
+		NumberOfParallelCalculations: 5,
+		LastPing:                     time.Now().UTC(),
+		Status:                       "waiting",
+	})
+	if err != nil {
+		log.Error("can't create agent", slog.String("fn", fn), sl.Err(err))
+
+		return nil, err
+	}
+
+	log.Info("create agent succesfully", slog.String("fn", fn))
+
 	return &Agent{
 		Agent:           agentObj,
 		log:             log,
@@ -109,7 +124,7 @@ func (a *Agent) Ping(producer brokers.Producer) {
 		return
 	}
 
-	log.Info("agent send ping to orchestrator", slog.Time("time", time.Now()))
+	log.Info("agent sends ping to orchestrator", slog.Time("time", time.Now()))
 }
 
 // RunSimpleComputer parses messages.ExpressionMessage and run SimpleComputer.
@@ -246,6 +261,21 @@ func (a *Agent) MakeExpressionsTerminated(ctx context.Context) {
 	}
 }
 
+// AssignToAgent assigns expression to agent.
+func (a *Agent) AssignToAgent(ctx context.Context, exprID int32) error {
+	const fn = "agent.AssignToAgent"
+
+	err := a.dbConfig.Queries.AssignExpressionToAgent(ctx, postgres.AssignExpressionToAgentParams{
+		AgentID:      sql.NullInt32{Int32: a.AgentID, Valid: true},
+		ExpressionID: exprID,
+	})
+	if err != nil {
+		a.log.Error("can't assign expression to agent", slog.String("fn", fn), sl.Err(err))
+	}
+
+	return nil
+}
+
 // ConsumeMessageFromComputers handles message from simple computers.
 // Producer publishes it to queue.
 func (a *Agent) ConsumeMessageFromComputers(ctx context.Context, result *messages.ExpressionMessage, producer brokers.Producer) {
@@ -311,6 +341,13 @@ func (a *Agent) ConsumeMessageFromOrchestrator(ctx context.Context, msgFromOrche
 	err := msgFromOrchestrator.Ack(false)
 	if err != nil {
 		log.Error("agent error: error acknowledging message", sl.Err(err))
+		a.kill()
+		return
+	}
+
+	err = a.AssignToAgent(ctx, exprMsg.ExpressionID)
+	if err != nil {
+		log.Error("agent error", sl.Err(err))
 		a.kill()
 		return
 	}

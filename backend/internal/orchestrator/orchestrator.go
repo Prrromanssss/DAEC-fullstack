@@ -105,23 +105,36 @@ func (o *Orchestrator) CheckPing(ctx context.Context, producer brokers.Producer)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		err := tx.Rollback()
-		if err != nil {
-			log.Error("can't rollback transaction")
-		}
-	}()
 
 	qtx := o.dbConfig.Queries.WithTx(tx)
 
 	agentIDs, err := qtx.TerminateAgents(
 		ctx,
-		time.Now().Add(-time.Duration(o.InactiveTimeForAgent)*time.Second),
+		strconv.Itoa(int(o.InactiveTimeForAgent)),
 	)
 	if err != nil {
 		log.Error("can't make agents terminated", sl.Err(err))
+		errRollback := tx.Rollback()
+		if errRollback != nil {
+			log.Error("can't rollback transaction")
 
+			return errRollback
+		}
 		return err
+	}
+
+	log.Debug("hey", slog.Any("agentIDs", agentIDs))
+
+	if len(agentIDs) == 0 {
+		log.Info("all agents are activate")
+		err = tx.Commit()
+		if err != nil {
+			log.Error("can't commit transaction", sl.Err(err))
+
+			return err
+		}
+
+		return nil
 	}
 
 	for _, agentID := range agentIDs {
@@ -132,7 +145,12 @@ func (o *Orchestrator) CheckPing(ctx context.Context, producer brokers.Producer)
 		if err != nil {
 			log.Error("can't make expressions by this agent terminated",
 				slog.Int("agent ID", int(agentID)), sl.Err(err))
+			errRollback := tx.Rollback()
+			if errRollback != nil {
+				log.Error("can't rollback transaction")
 
+				return errRollback
+			}
 			return err
 		}
 	}

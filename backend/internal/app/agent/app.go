@@ -12,7 +12,6 @@ import (
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/rabbitmq"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
 )
 
 type App struct {
@@ -59,7 +58,6 @@ func New(
 	ag, err := agent.NewAgent(
 		log,
 		dbCfg,
-		postgres.Agent{},
 		cancel,
 	)
 	if err != nil {
@@ -86,14 +84,6 @@ func (a *App) Run(ctx context.Context) error {
 		a.Consumer.Close()
 		a.AgentApp.MakeExpressionsTerminated(ctx)
 	}()
-
-	// Delete previous agents
-	err := a.AgentApp.DeletePreviousAgents(ctx)
-	if err != nil {
-		a.log.Error("can't delete previous agents", sl.Err(err))
-
-		return err
-	}
 
 	go func() {
 		for msgFromOrchestrator := range a.Consumer.GetMessages() {

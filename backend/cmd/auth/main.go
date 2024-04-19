@@ -27,7 +27,7 @@ func main() {
 	log.Debug("debug messages are enabled")
 
 	// Configuration Storage
-	dbCfg := storage.NewStorage(cfg.StorageURL)
+	dbCfg := storage.NewStorage(log, cfg.StorageURL)
 
 	authService := auth.New(log, dbCfg, dbCfg, cfg.TokenTTL)
 

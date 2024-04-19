@@ -50,5 +50,5 @@ WHERE agent_id = $1;
 -- name: TerminateAgents :many
 UPDATE agents
 SET status = 'terminated'
-WHERE EXTRACT(EPOCH FROM NOW()::timestamp - agents.last_ping) > $1
+WHERE EXTRACT(SECOND FROM NOW()::timestamp - agents.last_ping) > $1::numeric
 RETURNING agent_id;
