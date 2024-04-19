@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log"
@@ -36,4 +37,27 @@ func NewStorage(dbURL string) *Storage {
 		Queries: db,
 		DB:      conn,
 	}
+}
+
+// SaveUser saves user to storage.
+func (s *Storage) SaveUser(ctx context.Context, email string, passHash []byte) (int32, error) {
+	userID, err := s.Queries.SaveUser(ctx, postgres.SaveUserParams{
+		Email:        email,
+		PasswordHash: passHash,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return userID, nil
+}
+
+// User gets user from storage.
+func (s *Storage) User(ctx context.Context, email string) (postgres.User, error) {
+	user, err := s.Queries.GetUser(ctx, email)
+	if err != nil {
+		return postgres.User{}, err
+	}
+
+	return user, nil
 }

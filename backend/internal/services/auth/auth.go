@@ -26,12 +26,11 @@ type UserSaver interface {
 		ctx context.Context,
 		email string,
 		passHash []byte,
-	) (uid int64, err error)
+	) (uid int32, err error)
 }
 
 type UserProvider interface {
 	User(ctx context.Context, email string) (postgres.User, error)
-	IsAdmin(ctx context.Context, userID int64) (bool, error)
 }
 
 var (
@@ -142,5 +141,5 @@ func (a *Auth) RegisterNewUser(
 
 	log.Info("user registered")
 
-	return id, nil
+	return int64(id), nil
 }

@@ -10,11 +10,13 @@ import (
 )
 
 type Config struct {
-	Env                  string `yaml:"env" env:"ENV" env-default:"local"`
-	LogPathAgent         string `yaml:"log_path_agent" env-required:"true"`
-	LogPathOrchestrator  string `yaml:"log_path_orchestrator" env-required:"true"`
-	InactiveTimeForAgent int32  `yaml:"inactive_time_for_agent" env-default:"200"`
-	TimeForPing          int32  `yaml:"time_for_ping" end-default:"100"`
+	Env                  string        `yaml:"env" env:"ENV" env-default:"local"`
+	LogPathAgent         string        `yaml:"log_path_agent" env-required:"true"`
+	LogPathOrchestrator  string        `yaml:"log_path_orchestrator" env-required:"true"`
+	InactiveTimeForAgent int32         `yaml:"inactive_time_for_agent" env-default:"200"`
+	TimeForPing          int32         `yaml:"time_for_ping" end-default:"100"`
+	TokenTTL             time.Duration `yaml:"tokenTTL" env-default:"1h"`
+	GRPCServer           `yaml:"grpc_server" env-required:"true"`
 	DatabaseInstance     `yaml:"database_instance" env-required:"true"`
 	RabbitQueue          `yaml:"rabbit_queue" env-required:"true"`
 	HTTPServer           `yaml:"http_server" env-required:"true"`
@@ -35,6 +37,10 @@ type RabbitQueue struct {
 type DatabaseInstance struct {
 	StorageURL        string `yaml:"storage_url" env-default:"postgres://postgres:postgres@localhost:5432/daee?sslmode=disable"`
 	GooseMigrationDir string `yaml:"goose_migration_dir" env:"GOOSE_MIGRATION_DIR" env-required:"true"`
+}
+
+type GRPCServer struct {
+	Port int `yaml:"port" env-require:"true"`
 }
 
 func MustLoad() *Config {

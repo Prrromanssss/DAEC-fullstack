@@ -3,6 +3,9 @@ log_path_agent: "./backend/agent.log"
 log_path_orchestrator: "./backend/orchestrator.log"
 inactive_time_for_agent: 200
 time_for_ping: 100
+tokenTTL: 1h
+grpc_server:
+  port: 3000
 rabbit_queue:
   rabbitmq_url: "amqp://guest:guest@localhost:5672/"
   queue_for_expressions_to_agents: "Expressions to agents"

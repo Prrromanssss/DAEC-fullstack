@@ -12,11 +12,11 @@ import (
 const getUser = `-- name: GetUser :one
 SELECT user_id, email, password_hash
 FROM users
-WHERE user_id = $1
+WHERE email = $1
 `
 
-func (q *Queries) GetUser(ctx context.Context, userID int32) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, userID)
+func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, email)
 	var i User
 	err := row.Scan(&i.UserID, &i.Email, &i.PasswordHash)
 	return i, err
