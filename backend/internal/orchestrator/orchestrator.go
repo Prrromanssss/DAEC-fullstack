@@ -105,7 +105,13 @@ func (o *Orchestrator) CheckPing(ctx context.Context, producer brokers.Producer)
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		err := tx.Rollback()
+		if err != nil {
+			log.Error("can't rollback transaction")
+		}
+	}()
+
 	qtx := o.dbConfig.Queries.WithTx(tx)
 
 	agentIDs, err := qtx.TerminateAgents(
@@ -130,7 +136,12 @@ func (o *Orchestrator) CheckPing(ctx context.Context, producer brokers.Producer)
 			return err
 		}
 	}
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		log.Error("can't commit transaction", sl.Err(err))
+
+		return err
+	}
 
 	expressions, err := o.dbConfig.Queries.GetTerminatedExpressions(ctx)
 	if err != nil {
