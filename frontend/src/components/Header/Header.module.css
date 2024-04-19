@@ -1,0 +1,9 @@
+.container {
+  background: blueviolet;
+  padding: 20px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+}

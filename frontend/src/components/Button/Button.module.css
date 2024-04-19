@@ -1,0 +1,21 @@
+.btn {
+  background: blueviolet;
+  color: white;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  height: 84px;
+  width: 120px;
+  font-size: 25px;
+}
+
+.btn:hover {
+  box-shadow: 2px 1px 5px gray;
+}
+
+.btn:disabled {
+  background: #d1d1d1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
