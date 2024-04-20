@@ -60,6 +60,7 @@ func (o *Orchestrator) AddTask(
 			ExpressionID: expressionMessage.ExpressionID,
 			Token:        token,
 			Expression:   expressionMessage.Expression,
+			UserID:       expressionMessage.UserID,
 		})
 		if err != nil {
 			o.log.Error("can't publish token to queue", sl.Err(err), slog.String("fn", fn))
@@ -226,6 +227,7 @@ func (o *Orchestrator) HandleExpression(
 			ExpressionID: exprMsg.ExpressionID,
 			Token:        newResultAndToken.Token,
 			Expression:   newResultAndToken.Result,
+			UserID:       exprMsg.UserID,
 		})
 		if err != nil {
 			return fmt.Errorf("orchestrator error: %v, fn: %s", err, fn)

@@ -147,7 +147,9 @@ func (a *Agent) RunSimpleComputer(ctx context.Context, exprMsg *messages.Express
 	if err != nil {
 		return fmt.Errorf("can't convert int to str: %v, fn: %s", err, fn)
 	}
-
+	if int(exprMsg.UserID) == 0 {
+		a.log.Warn("", slog.String("oper", oper), slog.Int("userID", int(exprMsg.UserID)))
+	}
 	time_for_oper, err := a.dbConfig.Queries.GetOperationTimeByType(ctx, postgres.GetOperationTimeByTypeParams{
 		OperationType: oper,
 		UserID:        exprMsg.UserID,
