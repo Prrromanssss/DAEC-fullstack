@@ -8,6 +8,7 @@ import (
 	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/brokers"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/pool"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator"
@@ -17,6 +18,7 @@ import (
 type App struct {
 	log             *slog.Logger
 	OrchestratorApp *orchestrator.Orchestrator
+	workerPool      *pool.MyPool
 	amqpConfig      rabbitmq.AMQPConfig
 	Producer        brokers.Producer
 	Consumer        brokers.Consumer
@@ -64,10 +66,16 @@ func New(
 		log.Error("orchestrator error", sl.Err(err))
 		return nil, err
 	}
+	// Create worker pool with 5 workers.
+	workerPool, err := pool.NewWorkerPool(5, 10)
+	if err != nil {
+		log.Error("can't create worker pool", sl.Err(err))
+	}
 
 	return &App{
 		log:             log,
 		OrchestratorApp: orc,
+		workerPool:      workerPool,
 		amqpConfig:      *amqpCfg,
 		Producer:        producer,
 		Consumer:        consumer,
@@ -81,6 +89,7 @@ func (a *App) Run(ctx context.Context) error {
 		a.amqpConfig.Close()
 		a.Producer.Close()
 		a.Consumer.Close()
+		a.workerPool.Stop()
 	}()
 
 	const fn = "orchestratorapp.Run"
@@ -88,6 +97,8 @@ func (a *App) Run(ctx context.Context) error {
 	log := a.log.With(
 		slog.String("fn", fn),
 	)
+
+	a.workerPool.Start()
 
 	// Reload not completed expressions.
 	err := a.OrchestratorApp.ReloadComputingExpressions(ctx, a.Producer)
@@ -102,8 +113,11 @@ func (a *App) Run(ctx context.Context) error {
 
 	for {
 		select {
+		// TODO: Need to syncronize goroutines
 		case msgFromAgents := <-a.Consumer.GetMessages():
-			go a.OrchestratorApp.HandleMessagesFromAgents(ctx, msgFromAgents, a.Producer)
+			task := orchestrator.ExecuteWrapper(a.OrchestratorApp, ctx, msgFromAgents, a.Producer)
+			a.workerPool.AddWork(task)
+			time.Sleep(time.Second)
 		case <-ticker.C:
 			err := a.OrchestratorApp.CheckPing(ctx, a.Producer)
 			if err != nil {
@@ -112,7 +126,7 @@ func (a *App) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			log.Error("orchestrator stopped")
 
-			return err
+			return ctx.Err()
 		}
 	}
 }

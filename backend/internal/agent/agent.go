@@ -163,7 +163,7 @@ func (a *Agent) RunSimpleComputer(ctx context.Context, exprMsg *messages.Express
 		return fmt.Errorf("can't increment number of active calculations: %v, fn: %s", err, fn)
 	}
 
-	atomic.AddInt32(&a.NumberOfActiveCalculations, 1)
+	// atomic.AddInt32(&a.NumberOfActiveCalculations, 1)
 
 	return nil
 }
@@ -287,6 +287,8 @@ func (a *Agent) ConsumeMessageFromComputers(ctx context.Context, result *message
 
 	log.Info("agent consumes message from computers", slog.Any("message", result))
 
+	result.AgentID = a.AgentID
+
 	err := producer.PublishExpressionMessage(result)
 	if err != nil {
 		producer, err = producer.Reconnect()
@@ -328,22 +330,14 @@ func (a *Agent) ConsumeMessageFromOrchestrator(ctx context.Context, msgFromOrche
 		return
 	}
 
-	if a.GetSafelyNumberOfActiveCalculations() >= a.GetSafelyNumberOfParallelCalculations() {
-		err := msgFromOrchestrator.Nack(false, true)
-		if err != nil {
-			log.Error("agent error", sl.Err(err))
-			a.kill()
-			return
-		}
-		return
-	}
-
 	err := msgFromOrchestrator.Ack(false)
 	if err != nil {
 		log.Error("agent error: error acknowledging message", sl.Err(err))
 		a.kill()
 		return
 	}
+
+	log.Info("token", slog.Any("tokens", exprMsg.Token))
 
 	err = a.AssignToAgent(ctx, exprMsg.ExpressionID)
 	if err != nil {

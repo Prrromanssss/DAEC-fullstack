@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/agent"
@@ -12,11 +13,13 @@ import (
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/rabbitmq"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
+	"github.com/streadway/amqp"
 )
 
 type App struct {
 	log         *slog.Logger
 	AgentApp    *agent.Agent
+	mu          *sync.Mutex
 	TimeForPing int32
 	amqpConfig  rabbitmq.AMQPConfig
 	Producer    brokers.Producer
@@ -68,6 +71,7 @@ func New(
 	return &App{
 		log:         log,
 		AgentApp:    ag,
+		mu:          &sync.Mutex{},
 		TimeForPing: cfg.TimeForPing,
 		amqpConfig:  *amqpCfg,
 		Producer:    producer,
@@ -87,7 +91,22 @@ func (a *App) Run(ctx context.Context) error {
 
 	go func() {
 		for msgFromOrchestrator := range a.Consumer.GetMessages() {
-			go a.AgentApp.ConsumeMessageFromOrchestrator(ctx, msgFromOrchestrator)
+			a.mu.Lock()
+			if a.AgentApp.NumberOfActiveCalculations >= a.AgentApp.NumberOfParallelCalculations {
+				a.mu.Unlock()
+				err := msgFromOrchestrator.Nack(false, true)
+				if err != nil {
+					a.log.Error("can't nack message", sl.Err(err))
+					return
+				}
+				continue // skip the processing of this message and move on to the next one.
+			}
+			a.AgentApp.NumberOfActiveCalculations++
+			a.mu.Unlock()
+
+			go func(msgFromOrchestrator amqp.Delivery) {
+				a.AgentApp.ConsumeMessageFromOrchestrator(ctx, msgFromOrchestrator)
+			}(msgFromOrchestrator)
 		}
 	}()
 

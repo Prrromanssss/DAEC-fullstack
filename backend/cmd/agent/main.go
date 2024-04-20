@@ -12,6 +12,7 @@ import (
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
 )
 
+// TODO: Delete privous agents
 func main() {
 	ctxWithCancel, cancel := context.WithCancel(context.Background())
 	defer cancel()

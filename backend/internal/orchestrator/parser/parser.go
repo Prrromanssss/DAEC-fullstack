@@ -2,7 +2,6 @@ package parser
 
 import (
 	"errors"
-	"log"
 	"strconv"
 	"strings"
 	"unicode"
@@ -73,7 +72,7 @@ func isValidExpression(expression string) bool {
 
 func addZeroToUnaryPlusAndMinus(expression string) string {
 	var result strings.Builder
-	log.Println(expression)
+	// log.Println(expression)
 	length := len(expression)
 	ind := 0
 	for ind < length {
@@ -97,7 +96,7 @@ func addZeroToUnaryPlusAndMinus(expression string) string {
 			result.WriteRune(rune(expression[ind]))
 		}
 		ind++
-		log.Println(result.String())
+		// log.Println(result.String())
 	}
 	return result.String()
 }

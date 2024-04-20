@@ -123,8 +123,6 @@ func (o *Orchestrator) CheckPing(ctx context.Context, producer brokers.Producer)
 		return err
 	}
 
-	log.Debug("hey", slog.Any("agentIDs", agentIDs))
-
 	if len(agentIDs) == 0 {
 		log.Info("all agents are activate")
 		err = tx.Commit()
@@ -250,7 +248,6 @@ func (o *Orchestrator) UpdateExpressionFromAgents(
 		return messages.ResultAndTokenMessage{},
 			fmt.Errorf("can't get expression by id: %v, fn: %s", err, fn)
 	}
-
 	resAndTokenMsg, err := parser.InsertResultToToken(
 		expression.ParseData,
 		exprMsg.Token,
@@ -305,7 +302,7 @@ func (o *Orchestrator) HandleMessagesFromAgents(
 	ctx context.Context,
 	msgFromAgents amqp.Delivery,
 	producer brokers.Producer,
-) {
+) error {
 	const fn = "orchestrator.ConsumeMessagesFromAgents"
 
 	log := o.log.With(
@@ -317,30 +314,28 @@ func (o *Orchestrator) HandleMessagesFromAgents(
 	err := msgFromAgents.Ack(false)
 	if err != nil {
 		log.Error("error acknowledging message", sl.Err(err))
-		// TODO: think about it. Should I kill orchestrator?
-		o.kill()
+		return err
 	}
 
 	var exprMsg messages.ExpressionMessage
 	if err := json.Unmarshal(msgFromAgents.Body, &exprMsg); err != nil {
 		log.Error("failed to parse JSON", sl.Err(err))
-		// TODO: think about it. Should I kill orchestrator?
-		o.kill()
+		return err
 	}
 
 	if exprMsg.IsPing {
 		err := o.HandlePing(ctx, exprMsg.AgentID)
 		if err != nil {
 			log.Error("orchestrator error", sl.Err(err))
-			// TODO: think about it. Should I kill orchestrator?
-			o.kill()
+			return err
 		}
 	} else {
 		err := o.HandleExpression(ctx, exprMsg, producer)
 		if err != nil {
 			log.Error("", sl.Err(err))
-			// TODO: think about it. Should I kill orchestrator?
-			o.kill()
+			return err
 		}
 	}
+
+	return nil
 }
