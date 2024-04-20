@@ -252,6 +252,7 @@ func (o *Orchestrator) UpdateExpressionFromAgents(
 		return messages.ResultAndTokenMessage{},
 			fmt.Errorf("can't get expression by id: %v, fn: %s", err, fn)
 	}
+
 	resAndTokenMsg, err := parser.InsertResultToToken(
 		expression.ParseData,
 		exprMsg.Token,
