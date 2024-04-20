@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	agentapp "github.com/Prrromanssss/DAEE-fullstack/internal/app/agent"
@@ -40,5 +43,17 @@ func main() {
 		panic(err)
 	}
 
-	application.MustRun(ctxWithCancel)
+	go application.MustRun(ctxWithCancel)
+
+	// Graceful shotdown
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
+
+	sign := <-stop
+
+	log.Info("stopping agent", slog.String("signal", sign.String()))
+
+	application.Stop(ctxWithCancel)
+
+	log.Info("agent stopped")
 }

@@ -86,7 +86,6 @@ func (a *App) Run(ctx context.Context) error {
 		a.amqpConfig.Close()
 		a.Producer.Close()
 		a.Consumer.Close()
-		a.AgentApp.MakeExpressionsTerminated(ctx)
 	}()
 
 	go func() {
@@ -124,4 +123,8 @@ func (a *App) Run(ctx context.Context) error {
 			a.AgentApp.Ping(a.Producer)
 		}
 	}
+}
+
+func (a *App) Stop(ctx context.Context) {
+	a.AgentApp.Terminate()
 }

@@ -34,6 +34,11 @@ UPDATE agents
 SET status = $1
 WHERE agent_id = $2;
 
+-- name: UpdateTerminateAgentByID :exec
+UPDATE agents
+SET status = 'terminated', number_of_active_calculations = 0
+WHERE agent_id = $1;
+
 -- name: DeleteAgents :exec
 DELETE FROM agents;
 
@@ -49,6 +54,6 @@ WHERE agent_id = $1;
 
 -- name: TerminateAgents :many
 UPDATE agents
-SET status = 'terminated'
+SET status = 'terminated', number_of_active_calculations = 0
 WHERE EXTRACT(SECOND FROM NOW()::timestamp - agents.last_ping) > $1::numeric
 RETURNING agent_id;

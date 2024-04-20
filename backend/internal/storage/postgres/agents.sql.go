@@ -142,7 +142,7 @@ func (q *Queries) IncrementNumberOfActiveCalculations(ctx context.Context, agent
 
 const terminateAgents = `-- name: TerminateAgents :many
 UPDATE agents
-SET status = 'terminated'
+SET status = 'terminated', number_of_active_calculations = 0
 WHERE EXTRACT(SECOND FROM NOW()::timestamp - agents.last_ping) > $1::numeric
 RETURNING agent_id
 `
@@ -199,5 +199,16 @@ type UpdateAgentStatusParams struct {
 
 func (q *Queries) UpdateAgentStatus(ctx context.Context, arg UpdateAgentStatusParams) error {
 	_, err := q.db.ExecContext(ctx, updateAgentStatus, arg.Status, arg.AgentID)
+	return err
+}
+
+const updateTerminateAgentByID = `-- name: UpdateTerminateAgentByID :exec
+UPDATE agents
+SET status = 'terminated', number_of_active_calculations = 0
+WHERE agent_id = $1
+`
+
+func (q *Queries) UpdateTerminateAgentByID(ctx context.Context, agentID int32) error {
+	_, err := q.db.ExecContext(ctx, updateTerminateAgentByID, agentID)
 	return err
 }

@@ -94,15 +94,14 @@ func (a *Agent) GetSafelyNumberOfParallelCalculations() int32 {
 func (a *Agent) Terminate() {
 	const fn = "agent.Terminate"
 
-	err := a.dbConfig.Queries.UpdateAgentStatus(context.Background(), postgres.UpdateAgentStatusParams{
-		AgentID: a.AgentID,
-		Status:  "terminated",
-	})
+	err := a.dbConfig.Queries.UpdateTerminateAgentByID(context.Background(), a.AgentID)
 	if err != nil {
 		a.log.Error("can't terminate agent", slog.String("fn", fn), slog.Int("agentID", int(a.AgentID)), sl.Err(err))
 
 		return
 	}
+
+	a.kill()
 }
 
 // Ping sends pings to queue.
@@ -249,16 +248,6 @@ func (a *Agent) ChangeExpressionStatus(ctx context.Context, exprID int32, newSta
 		return fmt.Errorf("can't update expression status: %v, fn: %s", err, fn)
 	}
 	return nil
-}
-
-// MakeExpressionsTerminated makes all expressions by this agent terminated.
-func (a *Agent) MakeExpressionsTerminated(ctx context.Context) {
-	const fn = "agent.MakeExpressionsTerminated"
-
-	err := a.dbConfig.Queries.MakeExpressionsTerminated(ctx, sql.NullInt32{Int32: a.AgentID, Valid: true})
-	if err != nil {
-		a.log.Error("can't make expressions terminated", slog.String("fn", fn))
-	}
 }
 
 // AssignToAgent assigns expression to agent.
