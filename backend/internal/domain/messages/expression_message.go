@@ -7,6 +7,7 @@ type ExpressionMessage struct {
 	Result       int    `json:"result"`
 	IsPing       bool   `json:"is_ping"`
 	AgentID      int32  `json:"agent_id"`
+	UserID       int32  `json:"user_id"`
 }
 
 type ResultAndTokenMessage struct {

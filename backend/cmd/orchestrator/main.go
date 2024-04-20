@@ -91,14 +91,15 @@ func main() {
 	v1Router.Post("/expressions", handlers.HandlerCreateExpression(
 		log,
 		dbCfg,
+		cfg.JWTSecret,
 		application.OrchestratorApp,
 		application.Producer,
 	))
-	v1Router.Get("/expressions", handlers.HandlerGetExpressions(log, dbCfg))
+	v1Router.Get("/expressions", handlers.HandlerGetExpressions(log, dbCfg, cfg.JWTSecret))
 
 	// Operation endpoints
-	v1Router.Get("/operations", handlers.HandlerGetOperations(log, dbCfg))
-	v1Router.Patch("/operations", handlers.HandlerUpdateOperation(log, dbCfg))
+	v1Router.Get("/operations", handlers.HandlerGetOperations(log, dbCfg, cfg.JWTSecret))
+	v1Router.Patch("/operations", handlers.HandlerUpdateOperation(log, dbCfg, cfg.JWTSecret))
 
 	// Agent endpoints
 	v1Router.Get("/agents", handlers.HandlerGetAgents(log, dbCfg))

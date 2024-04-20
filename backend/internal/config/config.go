@@ -19,6 +19,7 @@ type Config struct {
 	InactiveTimeForAgent int32         `yaml:"inactive_time_for_agent" env-default:"200"`
 	TimeForPing          int32         `yaml:"time_for_ping" end-default:"100"`
 	TokenTTL             time.Duration `yaml:"tokenTTL" env-default:"1h"`
+	JWTSecret            string        `env:"JWT_SECRET" env-required:"true"`
 	GRPCServer           `yaml:"grpc_server" env-required:"true"`
 	DatabaseInstance     `yaml:"database_instance" env-required:"true"`
 	RabbitQueue          `yaml:"rabbit_queue" env-required:"true"`

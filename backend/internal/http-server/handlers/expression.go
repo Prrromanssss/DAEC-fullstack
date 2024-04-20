@@ -9,6 +9,7 @@ import (
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/brokers"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/jwt"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator"
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator/parser"
@@ -16,11 +17,11 @@ import (
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
 )
 
-// TODO: user
 // HandlerCreateExpression is a http.Handler to create new expression.
 func HandlerCreateExpression(
 	log *slog.Logger,
 	dbCfg *storage.Storage,
+	secret string,
 	orc *orchestrator.Orchestrator,
 	producer brokers.Producer,
 ) http.HandlerFunc {
@@ -31,13 +32,19 @@ func HandlerCreateExpression(
 			slog.String("fn", fn),
 		)
 
+		userID, err := jwt.GetUidFromJWT(r, secret)
+		if err != nil {
+			respondWithError(log, w, 403, "Status Forbidden")
+			return
+		}
+
 		type parametrs struct {
 			Data string `json:"data"`
 		}
 
 		decoder := json.NewDecoder(r.Body)
 		params := parametrs{}
-		err := decoder.Decode(&params)
+		err = decoder.Decode(&params)
 		if err != nil {
 			respondWithError(log, w, 400, fmt.Sprintf("error parsing JSON: %v", err))
 			return
@@ -56,7 +63,7 @@ func HandlerCreateExpression(
 				Data:      params.Data,
 				ParseData: parseData,
 				Status:    "ready_for_computation",
-				UserID:    1, // TODO: UserID !!!
+				UserID:    userID,
 			})
 		if err != nil {
 			respondWithError(log, w, 400, fmt.Sprintf("can't create expression: %v", err))
@@ -66,6 +73,7 @@ func HandlerCreateExpression(
 		msgToQueue := messages.ExpressionMessage{
 			ExpressionID: expression.ExpressionID,
 			Expression:   parseData,
+			UserID:       userID,
 		}
 
 		orc.AddTask(msgToQueue, producer)
@@ -77,7 +85,7 @@ func HandlerCreateExpression(
 }
 
 // HandlerGetExpressions is a http.Handler to get all expressions from storage.
-func HandlerGetExpressions(log *slog.Logger, dbCfg *storage.Storage) http.HandlerFunc {
+func HandlerGetExpressions(log *slog.Logger, dbCfg *storage.Storage, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const fn = "handlers.HandlerCreateExpression"
 
@@ -85,7 +93,13 @@ func HandlerGetExpressions(log *slog.Logger, dbCfg *storage.Storage) http.Handle
 			slog.String("fn", fn),
 		)
 
-		expressions, err := dbCfg.Queries.GetExpressions(r.Context())
+		userID, err := jwt.GetUidFromJWT(r, secret)
+		if err != nil {
+			respondWithError(log, w, 403, "Status Forbidden")
+			return
+		}
+
+		expressions, err := dbCfg.Queries.GetExpressions(r.Context(), userID)
 		if err != nil {
 			respondWithError(log, w, 400, fmt.Sprintf("Couldn't get expressions: %v", err))
 			return

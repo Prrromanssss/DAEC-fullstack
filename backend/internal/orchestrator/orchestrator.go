@@ -85,6 +85,7 @@ func (o *Orchestrator) ReloadComputingExpressions(
 		msgToQueue := messages.ExpressionMessage{
 			ExpressionID: expr.ExpressionID,
 			Expression:   expr.ParseData,
+			UserID:       expr.UserID,
 		}
 		o.AddTask(msgToQueue, producer)
 	}
@@ -170,6 +171,7 @@ func (o *Orchestrator) CheckPing(ctx context.Context, producer brokers.Producer)
 		msgToQueue := messages.ExpressionMessage{
 			ExpressionID: expr.ExpressionID,
 			Expression:   expr.ParseData,
+			UserID:       expr.UserID,
 		}
 		o.AddTask(msgToQueue, producer)
 	}

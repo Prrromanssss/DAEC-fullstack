@@ -148,7 +148,10 @@ func (a *Agent) RunSimpleComputer(ctx context.Context, exprMsg *messages.Express
 		return fmt.Errorf("can't convert int to str: %v, fn: %s", err, fn)
 	}
 
-	time_for_oper, err := a.dbConfig.Queries.GetOperationTimeByType(ctx, oper)
+	time_for_oper, err := a.dbConfig.Queries.GetOperationTimeByType(ctx, postgres.GetOperationTimeByTypeParams{
+		OperationType: oper,
+		UserID:        exprMsg.UserID,
+	})
 	if err != nil {
 		return fmt.Errorf("can't get execution time by operation type: %v, fn: %s", err, fn)
 	}
@@ -161,8 +164,6 @@ func (a *Agent) RunSimpleComputer(ctx context.Context, exprMsg *messages.Express
 	if err != nil {
 		return fmt.Errorf("can't increment number of active calculations: %v, fn: %s", err, fn)
 	}
-
-	// atomic.AddInt32(&a.NumberOfActiveCalculations, 1)
 
 	return nil
 }

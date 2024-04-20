@@ -6,12 +6,13 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/jwt"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
 )
 
 // HandlerGetOperations is a http.Handler to get all operations from storage.
-func HandlerGetOperations(log *slog.Logger, dbCfg *storage.Storage) http.HandlerFunc {
+func HandlerGetOperations(log *slog.Logger, dbCfg *storage.Storage, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const fn = "hadlers.HandlerGetOperations"
 
@@ -19,7 +20,13 @@ func HandlerGetOperations(log *slog.Logger, dbCfg *storage.Storage) http.Handler
 			slog.String("fn", fn),
 		)
 
-		operations, err := dbCfg.Queries.GetOperations(r.Context())
+		userID, err := jwt.GetUidFromJWT(r, secret)
+		if err != nil {
+			respondWithError(log, w, 403, "Status Forbidden")
+			return
+		}
+
+		operations, err := dbCfg.Queries.GetOperations(r.Context(), userID)
 		if err != nil {
 			respondWithError(log, w, 400, fmt.Sprintf("can't get operations: %v", err))
 			return
@@ -30,13 +37,19 @@ func HandlerGetOperations(log *slog.Logger, dbCfg *storage.Storage) http.Handler
 }
 
 // HandlerUpdateOperation is a http.Handler to update execution time of the certain operation type.
-func HandlerUpdateOperation(log *slog.Logger, dbCfg *storage.Storage) http.HandlerFunc {
+func HandlerUpdateOperation(log *slog.Logger, dbCfg *storage.Storage, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const fn = "handlers.HandlerUpdateOperation"
 
 		log := log.With(
 			slog.String("fn", fn),
 		)
+
+		userID, err := jwt.GetUidFromJWT(r, secret)
+		if err != nil {
+			respondWithError(log, w, 403, "Status Forbidden")
+			return
+		}
 
 		type parametrs struct {
 			OperationType string `json:"operation_type"`
@@ -45,7 +58,7 @@ func HandlerUpdateOperation(log *slog.Logger, dbCfg *storage.Storage) http.Handl
 
 		decoder := json.NewDecoder(r.Body)
 		params := parametrs{}
-		err := decoder.Decode(&params)
+		err = decoder.Decode(&params)
 		if err != nil {
 			respondWithError(log, w, 400, fmt.Sprintf("error parsing JSON: %v", err))
 		}
@@ -53,6 +66,7 @@ func HandlerUpdateOperation(log *slog.Logger, dbCfg *storage.Storage) http.Handl
 		operation, err := dbCfg.Queries.UpdateOperationTime(r.Context(), postgres.UpdateOperationTimeParams{
 			OperationType: params.OperationType,
 			ExecutionTime: params.ExecutionTime,
+			UserID:        userID,
 		})
 
 		if err != nil {

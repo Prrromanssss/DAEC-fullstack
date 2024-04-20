@@ -149,11 +149,12 @@ SELECT
     created_at, updated_at, data, parse_data,
     status, result, is_ready
 FROM expressions
+WHERE user_id = $1
 ORDER BY created_at DESC
 `
 
-func (q *Queries) GetExpressions(ctx context.Context) ([]Expression, error) {
-	rows, err := q.db.QueryContext(ctx, getExpressions)
+func (q *Queries) GetExpressions(ctx context.Context, userID int32) ([]Expression, error) {
+	rows, err := q.db.QueryContext(ctx, getExpressions, userID)
 	if err != nil {
 		return nil, err
 	}

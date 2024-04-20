@@ -84,6 +84,12 @@ func HandlerRegisterNewUser(
 			return
 		}
 
+		err = dbCfg.Queries.NewOperationsForUser(r.Context(), int32(registerResponse.UserId))
+		if err != nil {
+			respondWithError(log, w, 400, fmt.Sprintf("can't create new operations for user: %v", err))
+			return
+		}
+
 		respondWithJson(log, w, 200, registerResponse)
 	}
 }

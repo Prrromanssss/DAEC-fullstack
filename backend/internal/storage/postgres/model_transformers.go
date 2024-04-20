@@ -34,6 +34,7 @@ type OperationTransformed struct {
 	OperationID   int32  `json:"operation_id"`
 	OperationType string `json:"operation_type"`
 	ExecutionTime int32  `json:"execution_time"`
+	UserID        int32  `json:"user_id"`
 }
 
 func DatabaseOperationToOperation(dbOper Operation) OperationTransformed {

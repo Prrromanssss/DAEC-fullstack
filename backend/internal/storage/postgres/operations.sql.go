@@ -9,44 +9,19 @@ import (
 	"context"
 )
 
-const createOperation = `-- name: CreateOperation :exec
-INSERT INTO operations (operation_type, execution_time)
-VALUES ($1, $2)
-RETURNING
-    operation_id, operation_type, execution_time
-`
-
-type CreateOperationParams struct {
-	OperationType string
-	ExecutionTime int32
-}
-
-func (q *Queries) CreateOperation(ctx context.Context, arg CreateOperationParams) error {
-	_, err := q.db.ExecContext(ctx, createOperation, arg.OperationType, arg.ExecutionTime)
-	return err
-}
-
-const getOperationByType = `-- name: GetOperationByType :one
-SELECT
-    operation_id, operation_type, execution_time
-FROM operations
-WHERE operation_type = $1
-`
-
-func (q *Queries) GetOperationByType(ctx context.Context, operationType string) (Operation, error) {
-	row := q.db.QueryRowContext(ctx, getOperationByType, operationType)
-	var i Operation
-	err := row.Scan(&i.OperationID, &i.OperationType, &i.ExecutionTime)
-	return i, err
-}
-
 const getOperationTimeByType = `-- name: GetOperationTimeByType :one
-SELECT execution_time FROM operations
-WHERE operation_type = $1
+SELECT execution_time
+FROM operations
+WHERE operation_type = $1 AND user_id = $2
 `
 
-func (q *Queries) GetOperationTimeByType(ctx context.Context, operationType string) (int32, error) {
-	row := q.db.QueryRowContext(ctx, getOperationTimeByType, operationType)
+type GetOperationTimeByTypeParams struct {
+	OperationType string
+	UserID        int32
+}
+
+func (q *Queries) GetOperationTimeByType(ctx context.Context, arg GetOperationTimeByTypeParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, getOperationTimeByType, arg.OperationType, arg.UserID)
 	var execution_time int32
 	err := row.Scan(&execution_time)
 	return execution_time, err
@@ -54,13 +29,14 @@ func (q *Queries) GetOperationTimeByType(ctx context.Context, operationType stri
 
 const getOperations = `-- name: GetOperations :many
 SELECT
-    operation_id, operation_type, execution_time
+    operation_id, operation_type, execution_time, user_id
 FROM operations
+WHERE user_id = $1
 ORDER BY operation_type DESC
 `
 
-func (q *Queries) GetOperations(ctx context.Context) ([]Operation, error) {
-	rows, err := q.db.QueryContext(ctx, getOperations)
+func (q *Queries) GetOperations(ctx context.Context, userID int32) ([]Operation, error) {
+	rows, err := q.db.QueryContext(ctx, getOperations, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +44,12 @@ func (q *Queries) GetOperations(ctx context.Context) ([]Operation, error) {
 	var items []Operation
 	for rows.Next() {
 		var i Operation
-		if err := rows.Scan(&i.OperationID, &i.OperationType, &i.ExecutionTime); err != nil {
+		if err := rows.Scan(
+			&i.OperationID,
+			&i.OperationType,
+			&i.ExecutionTime,
+			&i.UserID,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -82,21 +63,40 @@ func (q *Queries) GetOperations(ctx context.Context) ([]Operation, error) {
 	return items, nil
 }
 
+const newOperationsForUser = `-- name: NewOperationsForUser :exec
+INSERT INTO operations (operation_type, user_id) VALUES 
+('+', $1),
+('-', $1),
+('*', $1),
+('/', $1)
+`
+
+func (q *Queries) NewOperationsForUser(ctx context.Context, userID int32) error {
+	_, err := q.db.ExecContext(ctx, newOperationsForUser, userID)
+	return err
+}
+
 const updateOperationTime = `-- name: UpdateOperationTime :one
 UPDATE operations
 SET execution_time = $1
-WHERE operation_type = $2
-RETURNING operation_id, operation_type, execution_time
+WHERE operation_type = $2 AND user_id = $3
+RETURNING operation_id, operation_type, execution_time, user_id
 `
 
 type UpdateOperationTimeParams struct {
 	ExecutionTime int32
 	OperationType string
+	UserID        int32
 }
 
 func (q *Queries) UpdateOperationTime(ctx context.Context, arg UpdateOperationTimeParams) (Operation, error) {
-	row := q.db.QueryRowContext(ctx, updateOperationTime, arg.ExecutionTime, arg.OperationType)
+	row := q.db.QueryRowContext(ctx, updateOperationTime, arg.ExecutionTime, arg.OperationType, arg.UserID)
 	var i Operation
-	err := row.Scan(&i.OperationID, &i.OperationType, &i.ExecutionTime)
+	err := row.Scan(
+		&i.OperationID,
+		&i.OperationType,
+		&i.ExecutionTime,
+		&i.UserID,
+	)
 	return i, err
 }

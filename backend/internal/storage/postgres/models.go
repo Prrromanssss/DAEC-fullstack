@@ -125,6 +125,7 @@ type Operation struct {
 	OperationID   int32
 	OperationType string
 	ExecutionTime int32
+	UserID        int32
 }
 
 type User struct {

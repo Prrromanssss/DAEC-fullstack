@@ -14,6 +14,7 @@ SELECT
     created_at, updated_at, data, parse_data,
     status, result, is_ready
 FROM expressions
+WHERE user_id = $1
 ORDER BY created_at DESC;
 
 -- name: GetExpressionByID :one
