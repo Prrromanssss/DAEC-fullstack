@@ -5,7 +5,8 @@ import (
 	"strings"
 )
 
-func infixToPostfix(expression string) (string, error) {
+// InfixToPostfix translates an expression from infix record to postfix.
+func InfixToPostfix(expression string) (string, error) {
 	var output strings.Builder
 	var stack []rune
 	for _, char := range expression {

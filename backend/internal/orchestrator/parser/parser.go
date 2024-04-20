@@ -13,7 +13,7 @@ func ParseExpression(expression string) (string, error) {
 		return "", errors.New("invalid expression")
 	}
 	rawExpression = addBrackets(rawExpression)
-	result, err := infixToPostfix(rawExpression)
+	result, err := InfixToPostfix(rawExpression)
 	if err != nil {
 		return "", err
 	}
@@ -167,5 +167,6 @@ func addBrackets(expression string) string {
 	}
 	result = strings.ReplaceAll(result, "&", "+")
 	result = strings.ReplaceAll(result, "$", "-")
+
 	return result
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
 )
 
+// GetTokens gets tokens "<operand> <operand> <operator>" from parseExpression.
 func GetTokens(log *slog.Logger, parseExpression string) []string {
 	const fn = "parser.GetTokens"
 
@@ -32,6 +33,8 @@ func GetTokens(log *slog.Logger, parseExpression string) []string {
 	return res
 }
 
+// InsertResultToToken inserts result into parseExpression to the place of the token.
+// Returns new token if the insertion was at the beginning of the parseExpression.
 func InsertResultToToken(parseExpression, token string, result int) (messages.ResultAndTokenMessage, error) {
 	ind := 0
 	tokens := strings.Split(parseExpression, " ")

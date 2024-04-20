@@ -11,7 +11,7 @@ import (
 )
 
 func TestGetTokens(t *testing.T) {
-	cases := []struct {
+	testCases := []struct {
 		name         string
 		expression   string
 		wantedTokens []string
@@ -50,7 +50,7 @@ func TestGetTokens(t *testing.T) {
 
 	log := slogdiscard.NewDiscardLogger()
 
-	for _, tc := range cases {
+	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			got := parser.GetTokens(log, tc.expression)
@@ -62,7 +62,7 @@ func TestGetTokens(t *testing.T) {
 }
 
 func TestInsertResultToToken(t *testing.T) {
-	cases := []struct {
+	testCases := []struct {
 		name             string
 		expression       string
 		token            string
@@ -138,7 +138,7 @@ func TestInsertResultToToken(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
+	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := parser.InsertResultToToken(tc.expression, tc.token, tc.result)
