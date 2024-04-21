@@ -1,0 +1,19 @@
+.btn {
+  background: blueviolet;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.btn:hover {
+  box-shadow: 2px 1px 5px gray;
+}
+
+.btn:disabled {
+  background: #d1d1d1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
