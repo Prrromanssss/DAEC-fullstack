@@ -1,7 +1,7 @@
 # DAEC-fullstack
 
 ![Main page](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/expressions.png)
-![Agents](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/agents.png)
+![Agents](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/Agents.png)
 In the photo, we can see two agents working (one gorutine from each) and one agent died.
 
 ## How to contact me:
