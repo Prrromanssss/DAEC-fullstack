@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	orchestratorapp "github.com/Prrromanssss/DAEC-fullstack/internal/app/orchestrator"
@@ -125,9 +127,22 @@ func main() {
 	}
 
 	log.Info("server starting", slog.String("host", cfg.HTTPServer.Address))
-	if err = srv.ListenAndServe(); err != nil {
-		log.Error("failed to start server ", sl.Err(err))
-	}
+
+	go func() {
+		if err = srv.ListenAndServe(); err != nil {
+			log.Error("failed to start server ", sl.Err(err))
+		}
+	}()
 
 	log.Info("server stopped")
+
+	// Graceful shotdown
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
+
+	sign := <-stop
+
+	log.Info("stopping agent", slog.String("signal", sign.String()))
+
+	application.Stop(ctxWithCancel, cfg)
 }

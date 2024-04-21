@@ -125,6 +125,7 @@ func (a *App) Run(ctx context.Context) error {
 	}
 }
 
+// Stop stops Agent app.
 func (a *App) Stop(ctx context.Context) {
 	a.AgentApp.Terminate()
 }

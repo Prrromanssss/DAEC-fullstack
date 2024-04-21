@@ -317,6 +317,12 @@ func (a *Agent) ConsumeMessageFromOrchestrator(ctx context.Context, msgFromOrche
 		return
 	}
 
+	if exprMsg.Kill {
+		log.Error("kill by orchestrator")
+		a.kill()
+		return
+	}
+
 	log.Info("token", slog.Any("tokens", exprMsg.Token))
 
 	err = a.AssignToAgent(ctx, exprMsg.ExpressionID)

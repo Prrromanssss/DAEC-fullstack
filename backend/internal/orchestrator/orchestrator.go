@@ -197,13 +197,13 @@ func (o *Orchestrator) HandlePing(ctx context.Context, agentID int32) error {
 	return nil
 }
 
-// HandleExpressionFromAgents makes expressions ready or publishes it again to queue.
+// HandleExpression makes expressions ready or publishes it again to queue.
 func (o *Orchestrator) HandleExpression(
 	ctx context.Context,
 	exprMsg messages.ExpressionMessage,
 	producer brokers.Producer,
 ) error {
-	const fn = "orchestrator.HandleExpressionFromAgents"
+	const fn = "orchestrator.HandleExpression"
 
 	newResultAndToken, err := o.UpdateExpressionFromAgents(ctx, exprMsg)
 	if err != nil {
@@ -308,7 +308,7 @@ func (o *Orchestrator) HandleMessagesFromAgents(
 	msgFromAgents amqp.Delivery,
 	producer brokers.Producer,
 ) error {
-	const fn = "orchestrator.ConsumeMessagesFromAgents"
+	const fn = "orchestrator.HandleMessagesFromAgents"
 
 	log := o.log.With(
 		slog.String("fn", fn),

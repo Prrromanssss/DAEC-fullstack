@@ -7,21 +7,25 @@ import (
 
 	"github.com/Prrromanssss/DAEC-fullstack/internal/config"
 	"github.com/Prrromanssss/DAEC-fullstack/internal/domain/brokers"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/domain/messages"
 	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/sl"
 	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/pool"
 	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
+	"github.com/streadway/amqp"
 
 	"github.com/Prrromanssss/DAEC-fullstack/internal/orchestrator"
 	"github.com/Prrromanssss/DAEC-fullstack/internal/rabbitmq"
 )
 
 type App struct {
-	log             *slog.Logger
-	OrchestratorApp *orchestrator.Orchestrator
-	workerPool      *pool.MyPool
-	amqpConfig      rabbitmq.AMQPConfig
-	Producer        brokers.Producer
-	Consumer        brokers.Consumer
+	log                *slog.Logger
+	OrchestratorApp    *orchestrator.Orchestrator
+	workerPool         *pool.MyPool
+	amqpConfig         rabbitmq.AMQPConfig
+	channelForProducer *amqp.Channel
+	channelForConsumer *amqp.Channel
+	Producer           brokers.Producer
+	Consumer           brokers.Consumer
 }
 
 // MustRun runs Orchestrator and panics if any error occurs.
@@ -73,12 +77,14 @@ func New(
 	}
 
 	return &App{
-		log:             log,
-		OrchestratorApp: orc,
-		workerPool:      workerPool,
-		amqpConfig:      *amqpCfg,
-		Producer:        producer,
-		Consumer:        consumer,
+		log:                log,
+		OrchestratorApp:    orc,
+		workerPool:         workerPool,
+		amqpConfig:         *amqpCfg,
+		channelForProducer: producer.Channel,
+		channelForConsumer: producer.Channel,
+		Producer:           producer,
+		Consumer:           consumer,
 	}, nil
 }
 
@@ -128,5 +134,30 @@ func (a *App) Run(ctx context.Context) error {
 
 			return ctx.Err()
 		}
+	}
+}
+
+// // Stop stops Orchestrator app.
+func (a *App) Stop(ctx context.Context, cfg *config.Config) {
+	if _, err := a.channelForConsumer.QueuePurge(cfg.QueueForResultsFromAgents, false); err != nil {
+		a.log.Error("can't purged queue", slog.String("queue", cfg.QueueForResultsFromAgents))
+	}
+	if _, err := a.channelForProducer.QueuePurge(cfg.QueueForExpressionsToAgents, false); err != nil {
+		a.log.Error("can't purged queue", slog.String("queue", cfg.QueueForExpressionsToAgents))
+	}
+	if err := a.Producer.PublishExpressionMessage(&messages.ExpressionMessage{
+		Kill: true,
+	}); err != nil {
+		a.log.Error("can't send kill message to agent")
+	}
+	if err := a.Producer.PublishExpressionMessage(&messages.ExpressionMessage{
+		Kill: true,
+	}); err != nil {
+		a.log.Error("can't send kill message to agent")
+	}
+	if err := a.Producer.PublishExpressionMessage(&messages.ExpressionMessage{
+		Kill: true,
+	}); err != nil {
+		a.log.Error("can't send kill message to agent")
 	}
 }

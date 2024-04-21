@@ -11,7 +11,7 @@ type AMQPConsumer struct {
 	log      *slog.Logger
 	amqpCfg  *AMQPConfig
 	Queue    amqp.Queue
-	channel  *amqp.Channel
+	Channel  *amqp.Channel
 	Messages <-chan amqp.Delivery
 }
 
@@ -55,7 +55,7 @@ func NewAMQPConsumer(
 		log:      log,
 		amqpCfg:  amqpCfg,
 		Queue:    queue,
-		channel:  chCons,
+		Channel:  chCons,
 		Messages: msgs,
 	}, nil
 }
@@ -67,5 +67,5 @@ func (ac *AMQPConsumer) GetMessages() <-chan amqp.Delivery {
 
 // Close closes Consumer channel.
 func (ac *AMQPConsumer) Close() {
-	ac.channel.Close()
+	ac.Channel.Close()
 }

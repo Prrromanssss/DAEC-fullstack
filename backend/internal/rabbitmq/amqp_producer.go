@@ -14,7 +14,7 @@ type AMQPProducer struct {
 	log     *slog.Logger
 	amqpCfg *AMQPConfig
 	Queue   amqp.Queue
-	channel *amqp.Channel
+	Channel *amqp.Channel
 }
 
 // NewAMQPProducer creates new Producer for AMQP protocol.
@@ -42,7 +42,7 @@ func NewAMQPProducer(log *slog.Logger, amqpCfg *AMQPConfig, queueName string) (*
 		log:     log,
 		amqpCfg: amqpCfg,
 		Queue:   queue,
-		channel: chProd,
+		Channel: chProd,
 	}, nil
 }
 
@@ -53,7 +53,7 @@ func (ap *AMQPProducer) PublishExpressionMessage(msg *messages.ExpressionMessage
 		return errors.New("failed to encode message to JSON")
 	}
 
-	err = ap.channel.Publish(
+	err = ap.Channel.Publish(
 		"",
 		ap.Queue.Name,
 		false,
@@ -82,5 +82,5 @@ func (ap *AMQPProducer) Reconnect() (*AMQPProducer, error) {
 
 // Close closes Producer channel.
 func (ap *AMQPProducer) Close() {
-	ap.channel.Close()
+	ap.Channel.Close()
 }
