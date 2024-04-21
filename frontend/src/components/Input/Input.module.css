@@ -2,9 +2,7 @@
   padding: 15px;
   border-radius: 10px;
   border: 1px solid blueviolet;
-  min-width: 500px;
-  height: 52px;
-  font-size: 25px;
+  min-width: 300px;
 }
 
 .input:focus-visible {
