@@ -31,3 +31,7 @@ jobs:
         with:
           version: v1.54
           working-directory: backend
+      - name: Run tests
+        run: go test ./...
+        with:
+          working-directory: backend

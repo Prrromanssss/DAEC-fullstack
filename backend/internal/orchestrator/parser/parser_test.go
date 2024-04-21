@@ -160,7 +160,7 @@ func TestIsValidExpression(t *testing.T) {
 		{
 			name:       "Empty expression",
 			expression: "",
-			want:       true,
+			want:       false,
 		},
 		{
 			name:       "Simple valid expression",
