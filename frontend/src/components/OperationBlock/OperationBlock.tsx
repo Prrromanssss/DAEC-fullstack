@@ -10,7 +10,7 @@ export const OperationBlock = ({ operation, saveChanges }: OperationBlockProps) 
 
   return (
     <div>
-      <p className={styles.title}>Operation type (sec): {operation.operation_type}</p>
+      <p className={styles.title}>Тип операции (сек): {operation.operation_type}</p>
       <div className={styles.block}>
         <Input
           type="number"

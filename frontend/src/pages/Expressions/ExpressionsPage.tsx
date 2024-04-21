@@ -28,7 +28,10 @@ export const ExpressionsPage = () => {
 
   useEffect(() => {
     getExpressions()
-      .then(data => setExpressions(data));
+      .then(data => setExpressions(data))
+      .catch(err => {
+        toast.error(err.response.data.error);
+      });
   }, []);
 
   return (
@@ -48,7 +51,7 @@ export const ExpressionsPage = () => {
       <div className={styles.items}>
         {expressions.map(expression => (
           <ExpressionBlock
-            key={expression.id}
+            key={expression.expression_id}
             expression={expression}
           />
         ))}

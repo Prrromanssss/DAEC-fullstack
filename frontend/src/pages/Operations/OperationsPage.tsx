@@ -22,14 +22,17 @@ export const OperationsPage = () => {
 
   useEffect(() => {
     getOperations()
-      .then(data => setOperations(data));
+      .then(data => setOperations(data))
+      .catch(err => {
+        toast.error(err.response.data.error);
+      });
   }, []);
 
   return (
     <div className={styles.container}>
       {operations.map(operation => (
         <OperationBlock
-          key={operation.id}
+          key={operation.operation_id}
           operation={operation}
           saveChanges={(newValue) => saveChanges(newValue, operation)}
         />
