@@ -9,7 +9,7 @@ import (
 
 func ParseExpression(expression string) (string, error) {
 	rawExpression := strings.ReplaceAll(expression, " ", "")
-	if !isValidExpression(rawExpression) {
+	if !IsValidExpression(rawExpression) {
 		return "", errors.New("invalid expression")
 	}
 	rawExpression = addBrackets(rawExpression)
@@ -29,7 +29,7 @@ func contains(arr []rune, element rune) bool {
 	return false
 }
 
-func isValidExpression(expression string) bool {
+func IsValidExpression(expression string) bool {
 	stack := make([]rune, 0)
 
 	for i, char := range expression {
@@ -72,7 +72,6 @@ func isValidExpression(expression string) bool {
 
 func addZeroToUnaryPlusAndMinus(expression string) string {
 	var result strings.Builder
-	// log.Println(expression)
 	length := len(expression)
 	ind := 0
 	for ind < length {

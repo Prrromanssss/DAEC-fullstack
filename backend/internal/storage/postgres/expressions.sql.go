@@ -257,7 +257,7 @@ func (q *Queries) MakeExpressionReady(ctx context.Context, arg MakeExpressionRea
 const makeExpressionsTerminated = `-- name: MakeExpressionsTerminated :exec
 UPDATE expressions
 SET status = 'terminated'
-WHERE agent_id = $1
+WHERE agent_id = $1 AND is_ready = false
 `
 
 func (q *Queries) MakeExpressionsTerminated(ctx context.Context, agentID sql.NullInt32) error {

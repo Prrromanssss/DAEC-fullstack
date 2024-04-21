@@ -57,7 +57,7 @@ ORDER BY created_at DESC;
 -- name: MakeExpressionsTerminated :exec
 UPDATE expressions
 SET status = 'terminated'
-WHERE agent_id = $1;
+WHERE agent_id = $1 AND is_ready = false;
 
 -- name: GetTerminatedExpressions :many
 SELECT

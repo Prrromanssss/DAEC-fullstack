@@ -9,7 +9,7 @@ import (
 
 	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
 	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 )
 
 var (
@@ -55,6 +55,10 @@ func (s *Storage) SaveUser(ctx context.Context, email string, passHash []byte) (
 		PasswordHash: passHash,
 	})
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" && pqErr.Constraint == "users_email_key" {
+			// Handle duplicate key violation error
+			return 0, ErrUserExists // Return the error unchanged
+		}
 		return 0, err
 	}
 
