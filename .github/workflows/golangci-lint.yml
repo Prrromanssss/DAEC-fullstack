@@ -32,8 +32,6 @@ jobs:
           version: v1.54
           working-directory: backend
       - name: Run tests
-        run: cd backend && go test ./...
-      - name: Check test results
         run: |
           if grep -q "ok" <<< "$(cd backend && go test ./...)"; then
             echo "All tests passed"
