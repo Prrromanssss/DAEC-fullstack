@@ -35,8 +35,9 @@ jobs:
         run: cd backend && go test ./...
       - name: Check test results
         run: |
-          if grep -q "ok" <<< "$(go test ./...)"; then
+          if grep -q "ok" <<< "$(cd backend && go test ./...)"; then
             echo "All tests passed"
+            exit 0
           else
             echo "Some tests failed"
             exit 1
