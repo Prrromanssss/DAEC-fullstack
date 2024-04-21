@@ -8,11 +8,11 @@ import (
 	"syscall"
 	"time"
 
-	agentapp "github.com/Prrromanssss/DAEE-fullstack/internal/app/agent"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/logcleaner"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/setup"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
+	agentapp "github.com/Prrromanssss/DAEC-fullstack/internal/app/agent"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/config"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/logcleaner"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/setup"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
 )
 
 func main() {

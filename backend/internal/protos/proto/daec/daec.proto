@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package auth;
 
-option go_package = "prrromanssss.daee.v1;daeev1";
+option go_package = "prrromanssss.daec.v1;daecv1";
 
 service Auth {
     rpc Register (RegisterRequest) returns (RegisterResponse);

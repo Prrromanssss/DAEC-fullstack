@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator/parser"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/orchestrator/parser"
 )
 
 func TestParseExpression(t *testing.T) {

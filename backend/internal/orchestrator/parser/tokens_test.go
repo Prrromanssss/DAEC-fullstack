@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/handlers/slogdiscard"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator/parser"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/domain/messages"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/handlers/slogdiscard"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/orchestrator/parser"
 )
 
 func TestGetTokens(t *testing.T) {

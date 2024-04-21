@@ -24,7 +24,7 @@ export const LoginForm = ({ variant, handler, data, setData }: FormProps) => {
         disabled={!data.email.length || !data.password.length}
         onClick={handler}
       >
-        {variant === "login" ? "Войти" : "Регистрация"}
+        {variant === "login" ? "Login" : "Register"}
       </button>
     </div>
   )

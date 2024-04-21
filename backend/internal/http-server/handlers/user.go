@@ -6,15 +6,15 @@ import (
 	"log/slog"
 	"net/http"
 
-	daeev1 "github.com/Prrromanssss/DAEE-fullstack/internal/protos/gen/go/daee"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
+	daecv1 "github.com/Prrromanssss/DAEC-fullstack/internal/protos/gen/go/daec"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
 )
 
 // HandlerLoginUser is a http.Handler to login user.
 func HandlerLoginUser(
 	log *slog.Logger,
 	dbCfg *storage.Storage,
-	grpcClient daeev1.AuthClient,
+	grpcClient daecv1.AuthClient,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const fn = "handlers.HandlerLoginUser"
@@ -36,7 +36,7 @@ func HandlerLoginUser(
 			return
 		}
 
-		loginResponse, err := grpcClient.Login(r.Context(), &daeev1.LoginRequest{
+		loginResponse, err := grpcClient.Login(r.Context(), &daecv1.LoginRequest{
 			Email:    params.Email,
 			Password: params.Password,
 		})
@@ -53,7 +53,7 @@ func HandlerLoginUser(
 func HandlerRegisterNewUser(
 	log *slog.Logger,
 	dbCfg *storage.Storage,
-	grpcClient daeev1.AuthClient,
+	grpcClient daecv1.AuthClient,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const fn = "handlers.HandlerLoginUser"
@@ -75,7 +75,7 @@ func HandlerRegisterNewUser(
 			return
 		}
 
-		registerResponse, err := grpcClient.Register(r.Context(), &daeev1.RegisterRequest{
+		registerResponse, err := grpcClient.Register(r.Context(), &daecv1.RegisterRequest{
 			Email:    params.Email,
 			Password: params.Password,
 		})

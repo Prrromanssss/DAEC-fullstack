@@ -12,11 +12,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/brokers"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/domain/brokers"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/domain/messages"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/sl"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage/postgres"
 
 	"github.com/streadway/amqp"
 )

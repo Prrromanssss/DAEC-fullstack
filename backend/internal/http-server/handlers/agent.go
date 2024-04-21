@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage/postgres"
 )
 
 // HandlerGetAgents is a http.Handler to get all agents from storage.

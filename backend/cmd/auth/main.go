@@ -6,11 +6,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	grpcapp "github.com/Prrromanssss/DAEE-fullstack/internal/app/grpc"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/setup"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/services/auth"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
+	grpcapp "github.com/Prrromanssss/DAEC-fullstack/internal/app/grpc"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/config"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/setup"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/services/auth"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
 )
 
 func main() {

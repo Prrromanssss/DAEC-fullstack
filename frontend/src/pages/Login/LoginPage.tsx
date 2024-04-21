@@ -43,7 +43,7 @@ export const LoginPage = () => {
             color: variant === "login" ? "white" : "black",
           }}
         >
-          Вход
+          Login
         </div>
         <div>/</div>
         <div
@@ -57,7 +57,7 @@ export const LoginPage = () => {
             color: variant === "reg" ? "white" : "black",
           }}
         >
-          Регистрация
+          Registration
         </div>
       </div>
       <LoginForm

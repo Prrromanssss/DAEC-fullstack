@@ -3,7 +3,7 @@ package rabbitmq
 import (
 	"log/slog"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/sl"
 	"github.com/streadway/amqp"
 )
 

@@ -39,7 +39,7 @@ type RabbitQueue struct {
 }
 
 type DatabaseInstance struct {
-	StorageURL        string `yaml:"storage_url" env-default:"postgres://postgres:postgres@localhost:5432/daee?sslmode=disable"`
+	StorageURL        string `yaml:"storage_url" env-default:"postgres://postgres:postgres@localhost:5432/DAEC?sslmode=disable"`
 	GooseMigrationDir string `yaml:"goose_migration_dir" env:"GOOSE_MIGRATION_DIR" env-required:"true"`
 }
 

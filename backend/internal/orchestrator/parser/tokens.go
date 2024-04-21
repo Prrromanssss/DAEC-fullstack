@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/domain/messages"
 )
 
 // GetTokens gets tokens "<operand> <operand> <operator>" from parseExpression.

@@ -1,8 +1,8 @@
 package brokers
 
 import (
-	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/rabbitmq"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/domain/messages"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/rabbitmq"
 )
 
 // Producer is an interface to produce messages to queue.

@@ -17,4 +17,4 @@ http_server:
   idle_timeout: 60s
 database_instance:
   goose_migration_dir: "./backend/sql/schema"
-  storage_url: "postgres://postgres:6,62607004@localhost:5434/daee?sslmode=disable"
+  storage_url: "postgres://postgres:6,62607004@localhost:5434/daec?sslmode=disable"

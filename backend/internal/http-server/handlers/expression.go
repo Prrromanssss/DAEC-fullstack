@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/brokers"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/messages"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/jwt"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/domain/brokers"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/domain/messages"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/jwt"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/orchestrator"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator/parser"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/orchestrator/parser"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage/postgres"
 )
 
 // HandlerCreateExpression is a http.Handler to create new expression.

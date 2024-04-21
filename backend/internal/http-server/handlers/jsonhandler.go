@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/sl"
 )
 
 // The respondWithError function is designed to handle HTTP responses that indicate an error condition.

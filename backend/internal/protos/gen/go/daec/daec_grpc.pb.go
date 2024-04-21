@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v4.25.3
-// source: daee/daee.proto
+// source: daec/daec.proto
 
-package daeev1
+package daecv1
 
 import (
 	context "context"
@@ -137,5 +137,5 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "daee/daee.proto",
+	Metadata: "daec/daec.proto",
 }

@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/sl"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage/postgres"
 	"github.com/lib/pq"
 )
 

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage/postgres"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 )

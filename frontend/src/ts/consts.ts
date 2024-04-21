@@ -10,9 +10,9 @@ export const ICONS = {
   [AGENT_STATUS.SLEEPING]: greenIcon,
   [AGENT_STATUS.WAITING]: yellowIcon,
   [AGENT_STATUS.TERMINATED]: redIcon,
-  [EXPRESSION_STATUS.READY_FOR_COMPUTATION]: blackIcon,
+  [EXPRESSION_STATUS.READY_FOR_COMPUTATION]: yellowIcon,
   [EXPRESSION_STATUS.RESULT]: greenIcon,
-  [EXPRESSION_STATUS.COMPUTING]: yellowIcon,
+  [EXPRESSION_STATUS.COMPUTING]: blackIcon,
 } as const;
 
 export const AGENT_DESCRIPTION = {
@@ -26,5 +26,5 @@ export const EXPRESSION_DESCRIPTION = {
   [EXPRESSION_STATUS.READY_FOR_COMPUTATION]: "the expression is accepted, it will be processed soon",
   [EXPRESSION_STATUS.RESULT]: "the expression is ready",
   [EXPRESSION_STATUS.COMPUTING]: "the expression is being processed, it will be calculated soon",
-  [EXPRESSION_STATUS.TERMINATED]: "expression parsing error",
+  [EXPRESSION_STATUS.TERMINATED]: "agent was terminated",
 } as const;

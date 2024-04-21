@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/handlers/slogpretty"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/handlers/slogpretty"
 )
 
 func SetupPrettySlog(logFile io.Writer) *slog.Logger {

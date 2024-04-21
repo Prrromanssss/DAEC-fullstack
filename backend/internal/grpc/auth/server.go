@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	daeev1 "github.com/Prrromanssss/DAEE-fullstack/internal/protos/gen/go/daee"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/services/auth"
+	daecv1 "github.com/Prrromanssss/DAEC-fullstack/internal/protos/gen/go/daec"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/services/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,18 +25,18 @@ type Auth interface {
 }
 
 type serverAPI struct {
-	daeev1.UnimplementedAuthServer
+	daecv1.UnimplementedAuthServer
 	auth Auth
 }
 
 func Register(gRPC *grpc.Server, auth Auth) {
-	daeev1.RegisterAuthServer(gRPC, &serverAPI{auth: auth})
+	daecv1.RegisterAuthServer(gRPC, &serverAPI{auth: auth})
 }
 
 func (s *serverAPI) Login(
 	ctx context.Context,
-	req *daeev1.LoginRequest,
-) (*daeev1.LoginResponse, error) {
+	req *daecv1.LoginRequest,
+) (*daecv1.LoginResponse, error) {
 	if err := validateLogin(req); err != nil {
 		return nil, err
 	}
@@ -49,15 +49,15 @@ func (s *serverAPI) Login(
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &daeev1.LoginResponse{
+	return &daecv1.LoginResponse{
 		Token: token,
 	}, nil
 }
 
 func (s *serverAPI) Register(
 	ctx context.Context,
-	req *daeev1.RegisterRequest,
-) (*daeev1.RegisterResponse, error) {
+	req *daecv1.RegisterRequest,
+) (*daecv1.RegisterResponse, error) {
 	if err := validateRegister(req); err != nil {
 		return nil, err
 	}
@@ -70,12 +70,12 @@ func (s *serverAPI) Register(
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &daeev1.RegisterResponse{
+	return &daecv1.RegisterResponse{
 		UserId: userID,
 	}, nil
 }
 
-func validateLogin(req *daeev1.LoginRequest) error {
+func validateLogin(req *daecv1.LoginRequest) error {
 	if req.GetEmail() == "" {
 		return status.Error(codes.InvalidArgument, "email is required")
 	}
@@ -87,7 +87,7 @@ func validateLogin(req *daeev1.LoginRequest) error {
 	return nil
 }
 
-func validateRegister(req *daeev1.RegisterRequest) error {
+func validateRegister(req *daecv1.RegisterRequest) error {
 	if req.GetEmail() == "" {
 		return status.Error(codes.InvalidArgument, "email is required")
 	}

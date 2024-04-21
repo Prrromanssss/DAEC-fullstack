@@ -1,8 +1,14 @@
-# DAEE-fullstack
+# DAEC-fullstack
 
-![Main page](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/images/expressions.png)
-![Agents](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/images/agents.png)
+![Main page](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/expressions.png)
+![Agents](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/agents.png)
 
+## How to contact me:
+#### NOTE!!! If there aren't docker-compose.yaml file you have to contact me!!!
+
+```
+https://t.me/sourr_cream
+```
 
 ## Deployment instructions
 
@@ -10,87 +16,23 @@
 
 Run this command
 ```commandline
-git clone https://github.com/Prrromanssss/DAEE-fullstack
+git clone https://github.com/Prrromanssss/DAEC-fullstack
 ```
 
-### 2. Installing PostgreSQL
-If you have your database - skip this step(just write to .env DB_URL)
-From root directory run this commands(firstly download docker)
-```commandline
-make run-postgres
+### 2. Build application
+Run this command
+```comandline
+docker-compose up -d
 ```
 
-### 3. Installing RabbitMQ
-If you have your rabbitMQ - skip this step(just write to .env RABBIT_MQ_URL)
-From root directory run this commands(firstly download docker)
-```commandline
-make pull-rabbitmq
-make run-rabbitmq
-```
-
-### 4. Generate file with virtual environment variables (.env) in root directory
-
-Generate file '.env' in root directory with the structure presented in the .env.example file
-
-If you didn't skip 2 and 3 just write
-```text
-DB_URL=postgres://postgres:postgres@localhost:5432/daee?sslmode=disable
-RABBIT_MQ_URL=amqp://guest:guest@localhost:5672/
-```
-
-### 5. Installing dependencies for backend
-
-From root directory run this command
-```commandline
-cd backend
-go mod download
-```
-
-### 6. Installing goose for migrations
-
-From backend directory run this command
-```commandline
-go install github.com/pressly/goose/cmd/goose@latest
-```
-
-### 7. Make migrations
-From backend directory run this command
-```commandline
-cd sql/schema
-goose postgres postgres://postgres:postgres@localhost:5432/daee up
-```
-
-### 8. Running backend
-
-Run this command from backend directory
-```commandline
-cd cmd/daee
-./main
-```
-
-### 9. Installing dependencies for frontend
-
-From root directory run this command
-```commandline
-cd frontend
-npm i
-```
-
-### 10. Running Frontend
-Run this command from frontend directory
-```commandline
-npm run dev
-```
-
-### 11. Follow link
+### 3. Follow link
 ```commandline
 http://127.0.0.1:5173/
 ```
 
 ## About
 
-This project is transitional to the next sprint on the Yandex Lyceum course.
-This is distributed arithmetic expression evaluator.
+This is distributed arithmetic expression calculator.
 
 **Some description**
 
@@ -101,32 +43,33 @@ Therefore, when a user sends an expression, he receives an expression identifier
 
 **How to use it?**
 
-/expressions - You can write some expressions to calculate
+Expressions - You can write some expressions to calculate (registered users only).
 
-/operations - You can change the execution time of each operation
+Operations - You can change the execution time of each operation (registered users only).
 
-/agents - You can see how many servers can currently process expressions
+Agents - You can see how many servers can currently process expressions.
+
+Login - You can register or log in to your account.
 
 **How does it work?**
 
 *Orchestrator*:
 1. HTTP-server
-2. Accepts client requests
-3. Parses its expression and sends it to Agent Agregator
-4. Writing the data to the database
-
-*Agent Agregator*:
-1. Consumes expressions from the orchestrator, 
-breaks it into tokens and writes it to the RabbitMQ queue for processing by agents
-2. Consumes results from agents, insert them to the expressions and sends new tokens to agents to calculate
-3. Consumes pings from agents, **BUT** I didn’t have time to create any mechanism that would check the pings of each server and if there had been no ping for a long time, kill it. (Ping every 200 seconds)
+2. Parses expression from users and sends to Agents through RabbitMQ.
+3. Consumes results from Agents, inserts them to the expressions and sends new tokens to Agents to calculate.
+4. Consumes pings from Agents and kills those who didn't send anything.
+5. Writing the data to the database.
 
 *Agent*:
-1. Consumes expressions from the Agent Agregator and gives it to its goroutines for calculations.
-2. Consumes results from each goroutine and sends it to Agent Agregator
-3. Sends pings to Agent Agregator
-4. Every agent have 5 goroutines
-5. There are 3 agents
+1. Consumes expressions from the Orchestartor and gives it to its goroutines for calculations.
+2. Consumes results from each goroutine and sends it to Orchestartor through RabbitMQ.
+3. Sends pings to Orchestartor.
+4. Every agent have 5 goroutines.
+5. There are 3 agents.
+
+*Auth*:
+1. Log in to user's account.
+2. Register new users.
 
 **What about parallelism?**
 
@@ -158,11 +101,25 @@ But that's not all, inside each expression we process subexpressions with differ
 If the HTTP-server crashed and we have expressions that did not have time to be calculated, by rebooting the server we will return to their calculations.
 
 ## Some expressions to testing site
-1. 4 + -2 + 5 * 6
-2. 2 + 2 + 2 + 2
-3. 2 + 2 * 4 + 3 - 4 + 5
+- Valid cases
+    1. 4 + -2 + 5 * 6
+    2. 2 + 2 + 2 + 2
+    3. 2 + 2 * 4 + 3 - 4 + 5
+    4. (23 + 125) - 567 * 23
+    5. -3 +6
+- Invalid cases
+    1. 4 / 0
+    2. 45 + x - 5
+    3. 45 + 4*
+    4 ---4 + 5
+    5. 52 * 3 /
+
+## Testing
+I have unit-tests to test the work of my parser.
+You can see that all tests have passed in github actions.
 
 ## Schema
-![Schema of the project](https://github.com/Prrromanssss/DAEE-fullstack/raw/main/images/schema.png)
+![Schema of the project](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/schema.png)
 
-
+## ER-diagram
+![ER-diagram of the project](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/ERD.png)

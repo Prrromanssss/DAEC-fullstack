@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.28.1
 // 	protoc        v4.25.3
-// source: daee/daee.proto
+// source: daec/daec.proto
 
-package daeev1
+package daecv1
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -32,7 +32,7 @@ type RegisterRequest struct {
 func (x *RegisterRequest) Reset() {
 	*x = RegisterRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_daee_daee_proto_msgTypes[0]
+		mi := &file_daec_daec_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45,7 +45,7 @@ func (x *RegisterRequest) String() string {
 func (*RegisterRequest) ProtoMessage() {}
 
 func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_daee_daee_proto_msgTypes[0]
+	mi := &file_daec_daec_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,7 +58,7 @@ func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterRequest.ProtoReflect.Descriptor instead.
 func (*RegisterRequest) Descriptor() ([]byte, []int) {
-	return file_daee_daee_proto_rawDescGZIP(), []int{0}
+	return file_daec_daec_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *RegisterRequest) GetEmail() string {
@@ -86,7 +86,7 @@ type RegisterResponse struct {
 func (x *RegisterResponse) Reset() {
 	*x = RegisterResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_daee_daee_proto_msgTypes[1]
+		mi := &file_daec_daec_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -99,7 +99,7 @@ func (x *RegisterResponse) String() string {
 func (*RegisterResponse) ProtoMessage() {}
 
 func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_daee_daee_proto_msgTypes[1]
+	mi := &file_daec_daec_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -112,7 +112,7 @@ func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterResponse.ProtoReflect.Descriptor instead.
 func (*RegisterResponse) Descriptor() ([]byte, []int) {
-	return file_daee_daee_proto_rawDescGZIP(), []int{1}
+	return file_daec_daec_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *RegisterResponse) GetUserId() int64 {
@@ -134,7 +134,7 @@ type LoginRequest struct {
 func (x *LoginRequest) Reset() {
 	*x = LoginRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_daee_daee_proto_msgTypes[2]
+		mi := &file_daec_daec_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -147,7 +147,7 @@ func (x *LoginRequest) String() string {
 func (*LoginRequest) ProtoMessage() {}
 
 func (x *LoginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_daee_daee_proto_msgTypes[2]
+	mi := &file_daec_daec_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -160,7 +160,7 @@ func (x *LoginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginRequest.ProtoReflect.Descriptor instead.
 func (*LoginRequest) Descriptor() ([]byte, []int) {
-	return file_daee_daee_proto_rawDescGZIP(), []int{2}
+	return file_daec_daec_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *LoginRequest) GetEmail() string {
@@ -188,7 +188,7 @@ type LoginResponse struct {
 func (x *LoginResponse) Reset() {
 	*x = LoginResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_daee_daee_proto_msgTypes[3]
+		mi := &file_daec_daec_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -201,7 +201,7 @@ func (x *LoginResponse) String() string {
 func (*LoginResponse) ProtoMessage() {}
 
 func (x *LoginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_daee_daee_proto_msgTypes[3]
+	mi := &file_daec_daec_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -214,7 +214,7 @@ func (x *LoginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginResponse.ProtoReflect.Descriptor instead.
 func (*LoginResponse) Descriptor() ([]byte, []int) {
-	return file_daee_daee_proto_rawDescGZIP(), []int{3}
+	return file_daec_daec_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *LoginResponse) GetToken() string {
@@ -224,10 +224,10 @@ func (x *LoginResponse) GetToken() string {
 	return ""
 }
 
-var File_daee_daee_proto protoreflect.FileDescriptor
+var File_daec_daec_proto protoreflect.FileDescriptor
 
-var file_daee_daee_proto_rawDesc = []byte{
-	0x0a, 0x0f, 0x64, 0x61, 0x65, 0x65, 0x2f, 0x64, 0x61, 0x65, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+var file_daec_daec_proto_rawDesc = []byte{
+	0x0a, 0x0f, 0x64, 0x61, 0x65, 0x63, 0x2f, 0x64, 0x61, 0x65, 0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x12, 0x04, 0x61, 0x75, 0x74, 0x68, 0x22, 0x43, 0x0a, 0x0f, 0x52, 0x65, 0x67, 0x69, 0x73,
 	0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d,
 	0x61, 0x69, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c,
@@ -250,30 +250,30 @@ var file_daee_daee_proto_rawDesc = []byte{
 	0x2e, 0x61, 0x75, 0x74, 0x68, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x1a, 0x13, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52,
 	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x1d, 0x5a, 0x1b, 0x70, 0x72, 0x72, 0x72, 0x6f,
-	0x6d, 0x61, 0x6e, 0x73, 0x73, 0x73, 0x73, 0x2e, 0x64, 0x61, 0x65, 0x65, 0x2e, 0x76, 0x31, 0x3b,
-	0x64, 0x61, 0x65, 0x65, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6d, 0x61, 0x6e, 0x73, 0x73, 0x73, 0x73, 0x2e, 0x64, 0x61, 0x65, 0x63, 0x2e, 0x76, 0x31, 0x3b,
+	0x64, 0x61, 0x65, 0x63, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_daee_daee_proto_rawDescOnce sync.Once
-	file_daee_daee_proto_rawDescData = file_daee_daee_proto_rawDesc
+	file_daec_daec_proto_rawDescOnce sync.Once
+	file_daec_daec_proto_rawDescData = file_daec_daec_proto_rawDesc
 )
 
-func file_daee_daee_proto_rawDescGZIP() []byte {
-	file_daee_daee_proto_rawDescOnce.Do(func() {
-		file_daee_daee_proto_rawDescData = protoimpl.X.CompressGZIP(file_daee_daee_proto_rawDescData)
+func file_daec_daec_proto_rawDescGZIP() []byte {
+	file_daec_daec_proto_rawDescOnce.Do(func() {
+		file_daec_daec_proto_rawDescData = protoimpl.X.CompressGZIP(file_daec_daec_proto_rawDescData)
 	})
-	return file_daee_daee_proto_rawDescData
+	return file_daec_daec_proto_rawDescData
 }
 
-var file_daee_daee_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
-var file_daee_daee_proto_goTypes = []interface{}{
+var file_daec_daec_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_daec_daec_proto_goTypes = []interface{}{
 	(*RegisterRequest)(nil),  // 0: auth.RegisterRequest
 	(*RegisterResponse)(nil), // 1: auth.RegisterResponse
 	(*LoginRequest)(nil),     // 2: auth.LoginRequest
 	(*LoginResponse)(nil),    // 3: auth.LoginResponse
 }
-var file_daee_daee_proto_depIdxs = []int32{
+var file_daec_daec_proto_depIdxs = []int32{
 	0, // 0: auth.Auth.Register:input_type -> auth.RegisterRequest
 	2, // 1: auth.Auth.Login:input_type -> auth.LoginRequest
 	1, // 2: auth.Auth.Register:output_type -> auth.RegisterResponse
@@ -285,13 +285,13 @@ var file_daee_daee_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_daee_daee_proto_init() }
-func file_daee_daee_proto_init() {
-	if File_daee_daee_proto != nil {
+func init() { file_daec_daec_proto_init() }
+func file_daec_daec_proto_init() {
+	if File_daec_daec_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_daee_daee_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_daec_daec_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RegisterRequest); i {
 			case 0:
 				return &v.state
@@ -303,7 +303,7 @@ func file_daee_daee_proto_init() {
 				return nil
 			}
 		}
-		file_daee_daee_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_daec_daec_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RegisterResponse); i {
 			case 0:
 				return &v.state
@@ -315,7 +315,7 @@ func file_daee_daee_proto_init() {
 				return nil
 			}
 		}
-		file_daee_daee_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_daec_daec_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LoginRequest); i {
 			case 0:
 				return &v.state
@@ -327,7 +327,7 @@ func file_daee_daee_proto_init() {
 				return nil
 			}
 		}
-		file_daee_daee_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_daec_daec_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LoginResponse); i {
 			case 0:
 				return &v.state
@@ -344,18 +344,18 @@ func file_daee_daee_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_daee_daee_proto_rawDesc,
+			RawDescriptor: file_daec_daec_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_daee_daee_proto_goTypes,
-		DependencyIndexes: file_daee_daee_proto_depIdxs,
-		MessageInfos:      file_daee_daee_proto_msgTypes,
+		GoTypes:           file_daec_daec_proto_goTypes,
+		DependencyIndexes: file_daec_daec_proto_depIdxs,
+		MessageInfos:      file_daec_daec_proto_msgTypes,
 	}.Build()
-	File_daee_daee_proto = out.File
-	file_daee_daee_proto_rawDesc = nil
-	file_daee_daee_proto_goTypes = nil
-	file_daee_daee_proto_depIdxs = nil
+	File_daec_daec_proto = out.File
+	file_daec_daec_proto_rawDesc = nil
+	file_daec_daec_proto_goTypes = nil
+	file_daec_daec_proto_depIdxs = nil
 }

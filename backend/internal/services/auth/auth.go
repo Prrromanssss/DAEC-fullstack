@@ -7,10 +7,10 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/jwt"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/jwt"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/sl"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage/postgres"
 	"golang.org/x/crypto/bcrypt"
 )
 

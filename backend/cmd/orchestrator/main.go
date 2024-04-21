@@ -7,18 +7,18 @@ import (
 	"os"
 	"time"
 
-	orchestratorapp "github.com/Prrromanssss/DAEE-fullstack/internal/app/orchestrator"
-	daeev1 "github.com/Prrromanssss/DAEE-fullstack/internal/protos/gen/go/daee"
+	orchestratorapp "github.com/Prrromanssss/DAEC-fullstack/internal/app/orchestrator"
+	daecv1 "github.com/Prrromanssss/DAEC-fullstack/internal/protos/gen/go/daec"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/http-server/handlers"
-	mwlogger "github.com/Prrromanssss/DAEE-fullstack/internal/http-server/middleware/logger"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/logcleaner"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/setup"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/config"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/http-server/handlers"
+	mwlogger "github.com/Prrromanssss/DAEC-fullstack/internal/http-server/middleware/logger"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/logcleaner"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/setup"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/sl"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
@@ -73,7 +73,7 @@ func main() {
 
 	log.Info("succesfully connect to gRPC server")
 
-	grpcClient := daeev1.NewAuthClient(conn)
+	grpcClient := daecv1.NewAuthClient(conn)
 
 	// Configuration HTTP-Server
 	router := chi.NewRouter()

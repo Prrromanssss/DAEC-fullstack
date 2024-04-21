@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net"
 
-	authgrpc "github.com/Prrromanssss/DAEE-fullstack/internal/grpc/auth"
+	authgrpc "github.com/Prrromanssss/DAEC-fullstack/internal/grpc/auth"
 	"google.golang.org/grpc"
 )
 

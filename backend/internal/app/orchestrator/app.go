@@ -5,14 +5,14 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/config"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/domain/brokers"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/logger/sl"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/pool"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/config"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/domain/brokers"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/sl"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/pool"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/orchestrator"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/rabbitmq"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/orchestrator"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/rabbitmq"
 )
 
 type App struct {

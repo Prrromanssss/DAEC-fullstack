@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/Prrromanssss/DAEE-fullstack/internal/lib/jwt"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage"
-	"github.com/Prrromanssss/DAEE-fullstack/internal/storage/postgres"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/jwt"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
+	"github.com/Prrromanssss/DAEC-fullstack/internal/storage/postgres"
 )
 
 // HandlerGetOperations is a http.Handler to get all operations from storage.

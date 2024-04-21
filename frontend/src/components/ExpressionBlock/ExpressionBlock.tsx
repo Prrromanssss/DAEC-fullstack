@@ -17,7 +17,7 @@ export const ExpressionBlock = ({ expression }: ExpressionBlockProps) => {
         </p>
       </div>
       <p className={styles.createdAt}>
-        Дата создания: {date}
+        Created at: {date}
       </p>
     </div>
   )
