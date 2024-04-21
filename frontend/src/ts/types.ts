@@ -1,1 +1,0 @@
-export type FormVariant = "login" | "reg";
