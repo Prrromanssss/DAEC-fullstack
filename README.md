@@ -11,6 +11,9 @@ In the photo, we can see two agents working (one gorutine from each) and one age
 https://t.me/sourr_cream
 ```
 
+## Presentation of the project work
+[DAEC video](https://disk.yandex.ru/i/ZdbXwhb4zIzPTA)
+
 ## Deployment instructions
 
 ### 1. Cloning project from GitHub
