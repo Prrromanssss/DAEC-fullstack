@@ -16,14 +16,6 @@ SELECT
 FROM agents
 ORDER BY created_at DESC;
 
--- name: GetAgentByID :one
-SELECT
-    agent_id, number_of_parallel_calculations,
-    last_ping, status, created_at,
-    number_of_active_calculations
-FROM agents
-WHERE agent_id = $1;
-
 -- name: UpdateAgentLastPing :exec
 UPDATE agents
 SET last_ping = $1
@@ -38,9 +30,6 @@ WHERE agent_id = $2;
 UPDATE agents
 SET status = 'terminated', number_of_active_calculations = 0
 WHERE agent_id = $1;
-
--- name: DeleteAgents :exec
-DELETE FROM agents;
 
 -- name: DecrementNumberOfActiveCalculations :exec
 UPDATE agents
@@ -57,3 +46,7 @@ UPDATE agents
 SET status = 'terminated', number_of_active_calculations = 0
 WHERE EXTRACT(SECOND FROM NOW()::timestamp - agents.last_ping) > $1::numeric
 RETURNING agent_id;
+
+-- name: TerminateOldAgents :exec
+DELETE FROM agents
+WHERE status = 'terminated';

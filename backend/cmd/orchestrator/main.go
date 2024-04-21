@@ -46,6 +46,12 @@ func main() {
 	// Configuration Storage
 	dbCfg := storage.NewStorage(log, cfg.StorageURL)
 
+	// Delete terminated agents
+	err := dbCfg.Queries.TerminateOldAgents(ctxWithCancel)
+	if err != nil {
+		log.Warn("can't delete old agents")
+	}
+
 	// Configuration Orchestrator
 	application, err := orchestratorapp.New(log, cfg, dbCfg, cancel)
 	if err != nil {

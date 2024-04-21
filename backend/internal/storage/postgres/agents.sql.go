@@ -58,38 +58,6 @@ func (q *Queries) DecrementNumberOfActiveCalculations(ctx context.Context, agent
 	return err
 }
 
-const deleteAgents = `-- name: DeleteAgents :exec
-DELETE FROM agents
-`
-
-func (q *Queries) DeleteAgents(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, deleteAgents)
-	return err
-}
-
-const getAgentByID = `-- name: GetAgentByID :one
-SELECT
-    agent_id, number_of_parallel_calculations,
-    last_ping, status, created_at,
-    number_of_active_calculations
-FROM agents
-WHERE agent_id = $1
-`
-
-func (q *Queries) GetAgentByID(ctx context.Context, agentID int32) (Agent, error) {
-	row := q.db.QueryRowContext(ctx, getAgentByID, agentID)
-	var i Agent
-	err := row.Scan(
-		&i.AgentID,
-		&i.NumberOfParallelCalculations,
-		&i.LastPing,
-		&i.Status,
-		&i.CreatedAt,
-		&i.NumberOfActiveCalculations,
-	)
-	return i, err
-}
-
 const getAgents = `-- name: GetAgents :many
 SELECT
     agent_id, number_of_parallel_calculations,
@@ -168,6 +136,16 @@ func (q *Queries) TerminateAgents(ctx context.Context, dollar_1 string) ([]int32
 		return nil, err
 	}
 	return items, nil
+}
+
+const terminateOldAgents = `-- name: TerminateOldAgents :exec
+DELETE FROM agents
+WHERE status = 'terminated'
+`
+
+func (q *Queries) TerminateOldAgents(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, terminateOldAgents)
+	return err
 }
 
 const updateAgentLastPing = `-- name: UpdateAgentLastPing :exec

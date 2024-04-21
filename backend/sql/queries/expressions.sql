@@ -25,11 +25,6 @@ SELECT
 FROM expressions
 WHERE expression_id = $1;
 
--- name: UpdateExpressionData :exec
-UPDATE expressions
-SET data = $1
-WHERE expression_id = $2;
-
 -- name: UpdateExpressionParseData :exec
 UPDATE expressions
 SET parse_data = $1

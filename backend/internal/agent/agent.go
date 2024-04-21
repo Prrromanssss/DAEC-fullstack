@@ -62,18 +62,6 @@ func NewAgent(
 	}, nil
 }
 
-// DeletePreviousAgents deletes previous agents when the application is restarted.
-func (a *Agent) DeletePreviousAgents(ctx context.Context) error {
-	err := a.dbConfig.Queries.DeleteAgents(ctx)
-	if err != nil {
-		a.log.Error("can't delete previous agents", sl.Err(err))
-
-		return err
-	}
-
-	return nil
-}
-
 // GetSafelyNumberOfActiveCalculations gets NumberOfActiveCalculations with Lock.
 func (a *Agent) GetSafelyNumberOfActiveCalculations() int32 {
 	a.mu.Lock()

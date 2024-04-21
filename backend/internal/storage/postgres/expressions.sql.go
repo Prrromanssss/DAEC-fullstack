@@ -265,22 +265,6 @@ func (q *Queries) MakeExpressionsTerminated(ctx context.Context, agentID sql.Nul
 	return err
 }
 
-const updateExpressionData = `-- name: UpdateExpressionData :exec
-UPDATE expressions
-SET data = $1
-WHERE expression_id = $2
-`
-
-type UpdateExpressionDataParams struct {
-	Data         string
-	ExpressionID int32
-}
-
-func (q *Queries) UpdateExpressionData(ctx context.Context, arg UpdateExpressionDataParams) error {
-	_, err := q.db.ExecContext(ctx, updateExpressionData, arg.Data, arg.ExpressionID)
-	return err
-}
-
 const updateExpressionParseData = `-- name: UpdateExpressionParseData :exec
 UPDATE expressions
 SET parse_data = $1
