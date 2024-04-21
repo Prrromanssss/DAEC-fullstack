@@ -143,6 +143,50 @@ func (q *Queries) GetExpressionByID(ctx context.Context, expressionID int32) (Ex
 	return i, err
 }
 
+const getExpressionWithStatusComputing = `-- name: GetExpressionWithStatusComputing :many
+SELECT
+    expression_id, user_id, agent_id,
+    created_at, updated_at, data, parse_data,
+    status, result, is_ready
+FROM expressions
+WHERE status = 'computing'
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetExpressionWithStatusComputing(ctx context.Context) ([]Expression, error) {
+	rows, err := q.db.QueryContext(ctx, getExpressionWithStatusComputing)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Expression
+	for rows.Next() {
+		var i Expression
+		if err := rows.Scan(
+			&i.ExpressionID,
+			&i.UserID,
+			&i.AgentID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Data,
+			&i.ParseData,
+			&i.Status,
+			&i.Result,
+			&i.IsReady,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getExpressions = `-- name: GetExpressions :many
 SELECT
     expression_id, user_id, agent_id,

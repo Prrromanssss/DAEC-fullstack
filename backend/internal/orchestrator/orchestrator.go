@@ -180,6 +180,71 @@ func (o *Orchestrator) CheckPing(ctx context.Context, producer brokers.Producer)
 	return nil
 }
 
+// FindForgottenExpressions that aren't processed by anyone.
+func (o *Orchestrator) FindForgottenExpressions(ctx context.Context, producer brokers.Producer) error {
+	const fn = "orchestrator.FindForgottenExpressions"
+
+	log := o.log.With(
+		slog.String("fn", fn),
+	)
+
+	tx, err := o.dbConfig.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	qtx := o.dbConfig.Queries.WithTx(tx)
+
+	agentIDs, err := qtx.GetBusyAgents(ctx)
+	if err != nil {
+		return err
+	}
+
+	if len(agentIDs) != 0 {
+		errCommit := tx.Commit()
+		if errCommit != nil {
+			log.Error("can't commit transaction")
+
+			return errCommit
+		}
+		return nil
+	}
+
+	expressions, err := qtx.GetExpressionWithStatusComputing(ctx)
+	if err != nil {
+		log.Error("can't get expressions", sl.Err(err))
+		errRollback := tx.Rollback()
+		if errRollback != nil {
+			log.Error("can't rollback transaction")
+
+			return errRollback
+		}
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Error("can't commit transaction", sl.Err(err))
+
+		return err
+	}
+
+	if len(expressions) == 0 {
+		return nil
+	}
+
+	for _, expr := range expressions {
+		msgToQueue := messages.ExpressionMessage{
+			ExpressionID: expr.ExpressionID,
+			Expression:   expr.ParseData,
+			UserID:       expr.UserID,
+		}
+		o.AddTask(msgToQueue, producer)
+	}
+
+	return nil
+}
+
 // HandlePing accepts ping from agent.
 func (o *Orchestrator) HandlePing(ctx context.Context, agentID int32) error {
 	const fn = "orchestrator.HandlePing"

@@ -97,6 +97,35 @@ func (q *Queries) GetAgents(ctx context.Context) ([]Agent, error) {
 	return items, nil
 }
 
+const getBusyAgents = `-- name: GetBusyAgents :many
+SELECT agent_id
+FROM agents
+WHERE number_of_active_calculations != 0
+`
+
+func (q *Queries) GetBusyAgents(ctx context.Context) ([]int32, error) {
+	rows, err := q.db.QueryContext(ctx, getBusyAgents)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var agent_id int32
+		if err := rows.Scan(&agent_id); err != nil {
+			return nil, err
+		}
+		items = append(items, agent_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const incrementNumberOfActiveCalculations = `-- name: IncrementNumberOfActiveCalculations :exec
 UPDATE agents
 SET number_of_active_calculations = number_of_active_calculations + 1

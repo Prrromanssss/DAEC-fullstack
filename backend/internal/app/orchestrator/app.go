@@ -129,6 +129,11 @@ func (a *App) Run(ctx context.Context) error {
 			if err != nil {
 				log.Warn("can't check pings from agents", sl.Err(err))
 			}
+
+			err = a.OrchestratorApp.FindForgottenExpressions(ctx, a.Producer)
+			if err != nil {
+				log.Warn("can't find forgotten expressions", sl.Err(err))
+			}
 		case <-ctx.Done():
 			log.Error("orchestrator stopped")
 

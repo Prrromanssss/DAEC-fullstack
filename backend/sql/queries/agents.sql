@@ -50,3 +50,8 @@ RETURNING agent_id;
 -- name: TerminateOldAgents :exec
 DELETE FROM agents
 WHERE status = 'terminated';
+
+-- name: GetBusyAgents :many
+SELECT agent_id
+FROM agents
+WHERE number_of_active_calculations != 0;

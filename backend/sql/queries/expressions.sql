@@ -67,3 +67,12 @@ ORDER BY created_at DESC;
 UPDATE expressions
 SET agent_id = $1
 WHERE expression_id = $2;
+
+-- name: GetExpressionWithStatusComputing :many
+SELECT
+    expression_id, user_id, agent_id,
+    created_at, updated_at, data, parse_data,
+    status, result, is_ready
+FROM expressions
+WHERE status = 'computing'
+ORDER BY created_at DESC;
