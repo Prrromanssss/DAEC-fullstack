@@ -6,11 +6,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	agentapp "github.com/Prrromanssss/DAEC-fullstack/internal/app/agent"
 	"github.com/Prrromanssss/DAEC-fullstack/internal/config"
-	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/logcleaner"
 	"github.com/Prrromanssss/DAEC-fullstack/internal/lib/logger/setup"
 	"github.com/Prrromanssss/DAEC-fullstack/internal/storage"
 )
@@ -23,15 +21,12 @@ func main() {
 	cfg := config.MustLoad()
 
 	// Configuration Logger
-	log := setup.SetupLogger(cfg.Env, cfg.LogPathAgent)
+	log := setup.SetupLogger(cfg.Env)
 	log.Info(
 		"start agent",
 		slog.String("env", cfg.Env),
 		slog.String("version", "2"),
 	)
-	log.Debug("debug messages are enabled")
-
-	go logcleaner.CleanLog(10*time.Minute, cfg.LogPathAgent, 100)
 
 	// Configuration Storage
 	dbCfg := storage.NewStorage(log, cfg.StorageURL)

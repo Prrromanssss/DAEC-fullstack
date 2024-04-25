@@ -1,7 +1,6 @@
 package setup
 
 import (
-	"io"
 	"log/slog"
 	"os"
 )
@@ -12,29 +11,21 @@ const (
 	envProd  = "prod"
 )
 
-func SetupLogger(env, logPath string) *slog.Logger {
+func SetupLogger(env string) *slog.Logger {
 	var log *slog.Logger
-
-	logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		panic("failed to open log file: " + err.Error())
-	}
-	defer logFile.Close()
-
-	writer := io.Writer(logFile)
 
 	switch env {
 	case envLocal:
-		log = SetupPrettySlog(writer)
+		log = SetupPrettySlog()
 	case envDev:
 		log = slog.New(
-			slog.NewJSONHandler(writer, &slog.HandlerOptions{
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 				Level: slog.LevelDebug,
 			}),
 		)
 	case envProd:
 		log = slog.New(
-			slog.NewJSONHandler(writer, &slog.HandlerOptions{
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 				Level: slog.LevelInfo,
 			}),
 		)

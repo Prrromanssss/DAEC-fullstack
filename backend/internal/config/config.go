@@ -1,21 +1,15 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
 	Env                  string        `yaml:"env" env:"ENV" env-default:"local"`
-	LogPathAgent         string        `yaml:"log_path_agent" env-required:"true"`
-	LogPathOrchestrator  string        `yaml:"log_path_orchestrator" env-required:"true"`
-	LogPathAuth          string        `yaml:"log_path_auth" env-required:"true"`
 	InactiveTimeForAgent int32         `yaml:"inactive_time_for_agent" env-default:"200"`
 	TimeForPing          int32         `yaml:"time_for_ping" end-default:"100"`
 	TokenTTL             time.Duration `yaml:"tokenTTL" env-default:"1h"`
@@ -44,20 +38,11 @@ type DatabaseInstance struct {
 }
 
 type GRPCServer struct {
-	Address string `yaml:"address" env-default:"localhost:44044"`
+	Address                    string `yaml:"address" env-default:"localhost:44044"`
+	GRPCClientConnectionString string `yaml:"grpc_client_connection_string" env-default:"auth:44044"`
 }
 
 func MustLoad() *Config {
-	path, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("can't get pwd: %v", err)
-	}
-
-	err = godotenv.Load(fmt.Sprintf("%s/local.env", filepath.Dir(filepath.Dir(filepath.Dir(path)))))
-	if err != nil {
-		log.Fatalf("can't parse env file: %v", err)
-	}
-
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
 		log.Fatal("CONFIG_PATH is not set")

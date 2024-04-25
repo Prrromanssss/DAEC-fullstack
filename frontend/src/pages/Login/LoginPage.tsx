@@ -16,11 +16,11 @@ export const LoginPage = () => {
     if (variant === "login") {
       login(data).then(() => {
         setData({ email: "", password: "" })
-        toast.success("Успешно!");
+        toast.success("Success!");
       });
     } else {
       registration(data).then(() => {
-        toast.success("Успешно!");
+        toast.success("Success!");
         setVariant("login");
       })
       .catch((err) => {

@@ -20,6 +20,8 @@ vendor/
 # Go workspace file
 go.work
 .env
+local.env
+local.yaml
 
 # Logs
 logs

@@ -1,0 +1,79 @@
+version: "3.9"
+services:
+  db:
+    build:
+      context: .
+      dockerfile: ./docker/database/postgres.Dockerfile
+    container_name: daec-db
+    restart: always
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "daec"
+    ports:
+      - "5432:5432"
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    container_name: daec-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    expose:
+     - "5672"
+     - "15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+  orchestrator:
+    build:
+      context: .
+      dockerfile: ./docker/backend/orchestrator.Dockerfile
+    container_name: daec-orchestrator
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - rabbitmq
+  agent1:
+    build:
+      context: .
+      dockerfile: ./docker/backend/agent.Dockerfile
+    container_name: daec-agent-1
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+  agent2:
+    build:
+      context: .
+      dockerfile: ./docker/backend/agent.Dockerfile
+    container_name: daec-agent-2
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+  agent3:
+    build:
+      context: .
+      dockerfile: ./docker/backend/agent.Dockerfile
+    container_name: daec-agent-3
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+  auth:
+    build:
+      context: .
+      dockerfile: ./docker/backend/auth.Dockerfile
+    container_name: daec-auth
+    restart: always
+    ports:
+      - "44044:44044"
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/frontend/frontend.Dockerfile
+    container_name: daec-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"

@@ -18,7 +18,7 @@ func main() {
 	cfg := config.MustLoad()
 
 	// Configuration Logger
-	log := setup.SetupLogger(cfg.Env, cfg.LogPathAuth)
+	log := setup.SetupLogger(cfg.Env)
 	log.Info(
 		"start grpc server",
 		slog.String("env", cfg.Env),
