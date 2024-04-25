@@ -4,4 +4,4 @@ ENV POSTGRES_PASSWORD=postgres
 
 ENV POSTGRES_DB=daec
 
-COPY ./backend/sql/daec.sql /docker-entrypoint-initdb.d/
+COPY ./sql/daec.sql /docker-entrypoint-initdb.d/

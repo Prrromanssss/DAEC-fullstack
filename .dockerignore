@@ -1,3 +1,14 @@
+# Frontend modules
 frontend/node_modules/
+
+# Backend modules
 backend/vendor
-sqlc.yaml
+
+# Database
+sql/sqlc.yaml
+sql/queries
+sql/schema
+
+# Github
+images/
+.github/
