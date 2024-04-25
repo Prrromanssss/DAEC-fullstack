@@ -1,8 +1,6 @@
 # DAEC-fullstack
 
-![Main page](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/expressions.png)
-![Agents](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/agents.png)
-In the photo, we can see two agents working (one gorutine from each) and one agent died.
+![golanci tests](https://github.com/Prrromanssss/DAEC-fullstack/actions/workflows/golangci-lint.yml/badge.svg)
 
 ## How to contact me:
 #### NOTE!!! If there aren't docker-compose.yml file you have to contact me!!!
@@ -35,6 +33,10 @@ http://127.0.0.1:5173/
 ```
 
 ## About
+
+![Main page](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/expressions.png)
+![Agents](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/agents.png)
+In the photo, we can see two agents working (one gorutine from each) and one agent died.
 
 This is distributed arithmetic expression calculator.
 
