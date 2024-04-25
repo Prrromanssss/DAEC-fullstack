@@ -129,7 +129,7 @@ func main() {
 		}
 	}()
 
-	log.Info("server stopped")
+	log.Info("http-server stopped")
 
 	// Graceful shotdown
 	stop := make(chan os.Signal, 1)
@@ -137,7 +137,9 @@ func main() {
 
 	sign := <-stop
 
-	log.Info("stopping agent", slog.String("signal", sign.String()))
+	log.Info("stopping http-server", slog.String("signal", sign.String()))
 
 	application.Stop(ctxWithCancel, cfg)
+
+	log.Info("http-server stopped")
 }
