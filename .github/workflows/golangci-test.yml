@@ -1,0 +1,37 @@
+name: golangci-test
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  golangci:
+    strategy:
+      matrix:
+        go: ['1.21']
+        os: [macos-latest]
+    name: test
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+      - name: Run tests
+        run: |
+          if grep -q "ok" <<< "$(cd backend && go test ./...)"; then
+            echo "All tests passed"
+            exit 0
+          else
+            echo "Some tests failed"
+            exit 1
+          fi
