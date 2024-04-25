@@ -5,7 +5,7 @@
 In the photo, we can see two agents working (one gorutine from each) and one agent died.
 
 ## How to contact me:
-#### NOTE!!! If there aren't docker-compose.yaml file you have to contact me!!!
+#### NOTE!!! If there aren't docker-compose.yml file you have to contact me!!!
 
 ```
 https://t.me/sourr_cream
