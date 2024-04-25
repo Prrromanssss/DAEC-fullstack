@@ -59,7 +59,7 @@ func main() {
 
 	// Configuration gRPC Client
 	conn, err := grpc.Dial(
-		cfg.GRPCServer.Address,
+		cfg.GRPCServer.GRPCClientConnectionString,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
