@@ -2,23 +2,6 @@
 
 ![golanci tests](https://github.com/Prrromanssss/DAEC-fullstack/actions/workflows/golangci-lint.yml/badge.svg)
 
-## Contents
-* [About](#about)
-  * [Description](#description)
-  * [How to use it?](#how-to-use-it)
-  * [How does it work?](#how-does-it-work)
-  * [What about parallelism?](#what-about-parallelism)
-* [Deployment instructions](#deployment-instructions)
-  * [Cloning project](#1-cloning-project-from-github)
-  * [Build and run application](#2-build-and-run-application)
-  * [Follow link](#3-follow-link)
-* [Testing](#testing)
-  * [Some expressions to test calculator ](#some-expressions-to-test-calculator)
-* [Schema](#schema)
-* [ER-diagram](#er-diagram)
-* [Contacts](#contacts)
-* [Video presentation](#video-presentation)
-
 ## About
 
 **This is distributed arithmetic expression calculator.**
