@@ -1,51 +1,24 @@
 # DAEC-fullstack
 
+![golanci lint](https://github.com/Prrromanssss/DAEC-fullstack/actions/workflows/golangci-lint.yml/badge.svg)
+![golanci test](https://github.com/Prrromanssss/DAEC-fullstack/actions/workflows/golangci-test.yml/badge.svg)
+
+## About
+
+**This is distributed arithmetic expression calculator.**
+
 ![Main page](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/expressions.png)
 ![Agents](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/agents.png)
 In the photo, we can see two agents working (one gorutine from each) and one agent died.
 
-## How to contact me:
-#### NOTE!!! If there aren't docker-compose.yaml file you have to contact me!!!
-
-```
-https://t.me/sourr_cream
-```
-
-## Presentation of the project work
-[DAEC video](https://disk.yandex.ru/i/ZdbXwhb4zIzPTA)
-
-## Deployment instructions
-
-### 1. Cloning project from GitHub
-
-Run this command
-```commandline
-git clone https://github.com/Prrromanssss/DAEC-fullstack
-```
-
-### 2. Build application
-Run this command
-```comandline
-docker-compose up -d
-```
-
-### 3. Follow link
-```commandline
-http://127.0.0.1:5173/
-```
-
-## About
-
-This is distributed arithmetic expression calculator.
-
-**Some description**
+### Description
 
 The user wants to calculate arithmetic expressions. He enters the code 2 + 2 * 2 and wants to get the answer 6. But our addition and multiplication (also subtraction) operations take a “very, very” long time. Therefore, the option in which the user makes an http request and receives the result as a response is impossible.
 Moreover: the calculation of each such operation in our “alternative reality” takes “giant” computing power. Accordingly, we must be able to perform each action separately and we can scale this system by adding computing power to our system in the form of new “machines”.
 Therefore, when a user sends an expression, he receives an expression identifier in response and can, at some periodicity, check with the server whether the expression has been counted? If the expression is finally evaluated, he will get the result. Remember that some parts of an arithmetic expression can be evaluated in parallel.
 
 
-**How to use it?**
+### How to use it?
 
 Expressions - You can write some expressions to calculate (registered users only).
 
@@ -55,7 +28,7 @@ Agents - You can see how many servers can currently process expressions.
 
 Login - You can register or log in to your account.
 
-**How does it work?**
+### How does it work?
 
 *Orchestrator*:
 1. HTTP-server
@@ -75,7 +48,7 @@ Login - You can register or log in to your account.
 1. Log in to user's account.
 2. Register new users.
 
-**What about parallelism?**
+### What about parallelism?
 
 Some example:
 
@@ -104,7 +77,31 @@ But that's not all, inside each expression we process subexpressions with differ
 
 If the HTTP-server crashed and we have expressions that did not have time to be calculated, by rebooting the server we will return to their calculations.
 
-## Some expressions to testing site
+## Deployment instructions
+
+### 1. Cloning project from GitHub
+
+Run this command
+```commandline
+git clone https://github.com/Prrromanssss/DAEC-fullstack
+```
+
+### 2. Build and run application
+Run this command
+```comandline
+docker-compose up -d
+```
+
+### 3. Follow link
+```commandline
+http://127.0.0.1:5173/
+```
+
+## Testing
+I have unit-tests to test the work of my parser.
+You can see that all tests have passed in github actions.
+
+### Some expressions to test calculator 
 - Valid cases
     1. 4 + -2 + 5 * 6
     2. 2 + 2 + 2 + 2
@@ -118,12 +115,18 @@ If the HTTP-server crashed and we have expressions that did not have time to be 
     4. ---4 + 5
     5. 52 * 3 /
 
-## Testing
-I have unit-tests to test the work of my parser.
-You can see that all tests have passed in github actions.
-
 ## Schema
 ![Schema of the project](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/schema.png)
 
 ## ER-diagram
 ![ER-diagram of the project](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/ERD.png)
+
+## Contacts
+**NOTE!!! If there aren't docker-compose.yml file you have to contact me!!!**
+
+```
+https://t.me/sourr_cream
+```
+
+## Video presentation
+[DAEC video](https://disk.yandex.ru/i/ZdbXwhb4zIzPTA)
