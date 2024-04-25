@@ -104,7 +104,7 @@ But that's not all, inside each expression we process subexpressions with differ
 
 If the HTTP-server crashed and we have expressions that did not have time to be calculated, by rebooting the server we will return to their calculations.
 
-## Some expressions to testing site
+## Some expressions to test calculator
 - Valid cases
     1. 4 + -2 + 5 * 6
     2. 2 + 2 + 2 + 2
