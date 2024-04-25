@@ -1,6 +1,7 @@
 # DAEC-fullstack
 
-![golanci tests](https://github.com/Prrromanssss/DAEC-fullstack/actions/workflows/golangci-lint.yml/badge.svg)
+![golanci lint](https://github.com/Prrromanssss/DAEC-fullstack/actions/workflows/golangci-lint.yml/badge.svg)
+![golanci test](https://github.com/Prrromanssss/DAEC-fullstack/actions/workflows/golangci-test.yml/badge.svg)
 
 ## About
 
