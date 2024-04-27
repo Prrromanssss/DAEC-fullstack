@@ -1,0 +1,18 @@
+env: "local"
+inactive_time_for_agent: 20
+time_for_ping: 10
+tokenTTL: 1h
+grpc_server:
+  address: ":44044"
+  grpc_client_connection_string: "auth:44044"
+rabbit_queue:
+  rabbitmq_url: "amqp://guest:guest@rabbitmq:5672/"
+  queue_for_expressions_to_agents: "Expressions to agents"
+  queue_for_results_from_agents: "Results from agents"
+http_server:
+  address: ":3000"
+  timeout: 4s
+  idle_timeout: 60s
+database_instance:
+  goose_migration_dir: "./backend/sql/schema"
+  storage_url: "postgres://postgres:postgres@db:5432/daec?sslmode=disable"

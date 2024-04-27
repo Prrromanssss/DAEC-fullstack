@@ -21,7 +21,6 @@ vendor/
 go.work
 .env
 local.env
-local.yaml
 
 # Logs
 logs
