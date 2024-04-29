@@ -121,12 +121,5 @@ You can see that all tests have passed in github actions.
 ## ER-diagram
 ![ER-diagram of the project](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/ERD.png)
 
-## Contacts
-**NOTE!!! If there aren't docker-compose.yml file you have to contact me!!!**
-
-```
-https://t.me/sourr_cream
-```
-
 ## Video presentation
 [DAEC video](https://disk.yandex.ru/i/ZdbXwhb4zIzPTA)
