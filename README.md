@@ -120,3 +120,6 @@ You can see that all tests have passed in github actions.
 
 ## ER-diagram
 ![ER-diagram of the project](https://github.com/Prrromanssss/DAEC-fullstack/raw/main/images/ERD.png)
+
+## Video presentation
+[Video presantation](https://disk.yandex.ru/i/ZdbXwhb4zIzPTA)
